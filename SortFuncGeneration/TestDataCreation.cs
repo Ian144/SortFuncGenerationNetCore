@@ -38,7 +38,11 @@ namespace SortFuncGeneration
 
             var targets = Arb.From<Target>().Generator.Sample(size);
 
-            using (var fs = new FileStream("c:\\temp\\targetData.data", FileMode.Create))
+            var dir = Path.Combine(
+                Path.GetTempPath(),
+                "targetData.data");
+
+            using (var fs = new FileStream(dir, FileMode.Create))
             {
                 ProtoBuf.Serializer.Serialize(fs, targets);
             }

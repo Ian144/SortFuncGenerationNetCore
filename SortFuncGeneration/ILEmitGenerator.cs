@@ -33,9 +33,7 @@ namespace SortFuncGeneration
                 skipVisibility: true);
 
             var il = dynamicMethod.GetILGenerator();
-
             il.DeclareLocal(typeof(int));
-
             var label1 = il.DefineLabel();
 
             for(int ctr = 0; ctr < xs.Count; ++ctr)
@@ -48,8 +46,8 @@ namespace SortFuncGeneration
                     {
                         il.Emit(OpCodes.Ldarg_0);
                         il.Emit(OpCodes.Call, propGet);
-                        il.Emit(OpCodes.Stloc_0);
-                        il.Emit(OpCodes.Ldloca, 0); // load location address, unlike for string
+                        il.Emit(OpCodes.Stloc_0); // why does this need to be done for an int (a value-type) and not for a string (reference type)?
+                        il.Emit(OpCodes.Ldloca, 0); // load location address, unlike for string, i suspect this is because the first arg to int.CompareTo must be an address
                         il.Emit(OpCodes.Ldarg_1);
                         il.Emit(OpCodes.Call, propGet);
                         il.Emit(OpCodes.Call, _intCompareTo);

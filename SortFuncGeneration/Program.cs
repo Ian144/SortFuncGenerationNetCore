@@ -9,7 +9,7 @@ namespace SortFuncGeneration
     {
         static void Main(string[] args)
         {
-            TestDataCreation.CreateAndPersistData(50000);
+            TestDataCreation.CreateAndPersistData(100000);
 
             // checks all sort methods produce the same results
             var bmark = new Benchmarks();
