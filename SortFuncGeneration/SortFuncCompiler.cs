@@ -21,22 +21,22 @@ namespace SortFuncGeneration
             return lambda.Compile();
         }
 
-        public static Func<T, T, int> MakeSortFuncCompToMeth<T>(IList<SortBy> sortDescriptors)
-        {
-            ParameterExpression param1Expr = Expression.Parameter(typeof(T));
-            ParameterExpression param2Expr = Expression.Parameter(typeof(T));
-            BlockExpression exprSd = MakeCompositeCompare(param1Expr, param2Expr, sortDescriptors);
-            Expression<Func<T, T, int>> lambda = Expression.Lambda<Func<T, T, int>>(exprSd, param1Expr, param2Expr);
+        //public static Func<T, T, int> MakeSortFuncCompToMeth<T>(IList<SortBy> sortDescriptors)
+        //{
+        //    ParameterExpression param1Expr = Expression.Parameter(typeof(T));
+        //    ParameterExpression param2Expr = Expression.Parameter(typeof(T));
+        //    BlockExpression exprSd = MakeCompositeCompare(param1Expr, param2Expr, sortDescriptors);
+        //    Expression<Func<T, T, int>> lambda = Expression.Lambda<Func<T, T, int>>(exprSd, param1Expr, param2Expr);
 
-            var ab = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("assembly"), AssemblyBuilderAccess.Run);
-            var dynamicModule = ab.DefineDynamicModule("module");
-            var typeBuilder = dynamicModule.DefineType("type", TypeAttributes.Public);
-            var methodBuilder = typeBuilder.DefineMethod("test3", MethodAttributes.Public | MethodAttributes.Static);
-            lambda.CompileToMethod(methodBuilder);
-            var dynamicType = typeBuilder.CreateType();
-            // ReSharper disable once AssignNullToNotNullAttribute // don't mind blowing up if dynamicType.GetMethod returns null
-            return (Func<T, T, int>)Delegate.CreateDelegate(typeof(Func<T, T, int>), dynamicType.GetMethod("test3"));
-        }
+        //    var ab = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("assembly"), AssemblyBuilderAccess.Run);
+        //    var dynamicModule = ab.DefineDynamicModule("module");
+        //    var typeBuilder = dynamicModule.DefineType("type", TypeAttributes.Public);
+        //    var methodBuilder = typeBuilder.DefineMethod("test3", MethodAttributes.Public | MethodAttributes.Static);
+        //    lambda.CompileToMethod(methodBuilder);
+        //    var dynamicType = typeBuilder.CreateType();
+        //    // ReSharper disable once AssignNullToNotNullAttribute // don't mind blowing up if dynamicType.GetMethod returns null
+        //    return (Func<T, T, int>)Delegate.CreateDelegate(typeof(Func<T, T, int>), dynamicType.GetMethod("test3"));
+        //}
 
         private static BlockExpression MakePropertyCompareBlock(
             SortBy sortDescriptor,

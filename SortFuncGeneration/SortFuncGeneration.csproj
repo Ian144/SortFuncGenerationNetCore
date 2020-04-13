@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <Compile Remove="ProgramX.cs" />
-    <Compile Remove="SortFuncCompiler.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,6 +14,10 @@
     <PackageReference Include="FastExpressionCompiler" Version="2.0.0" />
     <PackageReference Include="FsCheck" Version="3.0.0-alpha4" />
     <PackageReference Include="protobuf-net" Version="3.0.0-alpha.133" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="BenchmarkDotNet.Artifacts\results\" />
   </ItemGroup>
 
 </Project>
