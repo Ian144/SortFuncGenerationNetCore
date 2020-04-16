@@ -6,7 +6,6 @@ using System.Reflection.Emit;
 using static System.String;
 
 
-// ReSharper disable AssignNullToNotNullAttribute todo: remove disable null ... when working
 
 namespace SortFuncGeneration
 {

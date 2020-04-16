@@ -5,13 +5,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
-using SortFuncCommon;
 using static System.String;
 
-// ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable SuggestVarOrType_SimpleTypes
-// ReSharper disable AssignNullToNotNullAttribute
-// ReSharper disable UnusedMember.Local
 
 namespace SortFuncGeneration
 {
@@ -19,7 +14,7 @@ namespace SortFuncGeneration
     public class Benchmarks
     {
         private List<Target> _xs;
-        //private readonly Consumer _consumer = new Consumer();
+        private readonly Consumer _consumer = new Consumer();
 
         private ComparerAdaptor<Target> _generatedComparerFEC;
         private ComparerAdaptor<Target> _handCodedTernary;
@@ -35,7 +30,7 @@ namespace SortFuncGeneration
         [IterationSetup]
         public void Setup()
         {
-            var dir = Path.Combine( Path.GetTempPath(), "targetData.data");
+            var dir = Path.Combine(Path.GetTempPath(), "targetData.data");
             var fs = new FileStream(dir, FileMode.Open, FileAccess.Read);
             _xs = ProtoBuf.Serializer.Deserialize<List<Target>>(fs);
 
@@ -54,30 +49,26 @@ namespace SortFuncGeneration
                 .ThenBy(x => x.IntProp2)
                 .ThenBy(x => x.StrProp2, StringComparer.Ordinal);
 
-            _generatedComparer = new ComparerAdaptor<Target>(SortFuncCompiler.MakeSortFunc<Target>(sortBys));
-
-            _generatedComparerFEC = new ComparerAdaptor<Target>( SortFuncCompilerFEC.MakeSortFunc<Target>(sortBys) );
-
-            _ilEmittedComparer = new ComparerAdaptor<Target>( ILEmitGenerator.EmitSortFunc<Target>(sortBys) );
-
+            var makeSortFunc = SortFuncCompiler.MakeSortFunc<Target>(sortBys);
+            _generatedComparer = new ComparerAdaptor<Target>(makeSortFunc);
+            _generatedComparerFEC = new ComparerAdaptor<Target>(SortFuncCompilerFEC.MakeSortFunc<Target>(sortBys));
+            _ilEmittedComparer = new ComparerAdaptor<Target>(ILEmitGenerator.EmitSortFunc<Target>(sortBys));
             _handCodedTernary = new ComparerAdaptor<Target>(HandCodedTernary);
-
             _handCoded = new ComparerAdaptor<Target>(HandCoded);
-
             _composedFunctionsComparer = new ComparerAdaptor<Target>(ComposedFuncs);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int CmpIntProp1(Target p1, Target p2) => p1.IntProp1.CompareTo(p2.IntProp1);
+        private static int CmpIntProp1(Target p1, Target p2) => p1.IntProp1.CompareTo(p2.IntProp1);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int CmpStrProp1(Target p1, Target p2) => CompareOrdinal(p1.StrProp1, p2.StrProp1);
+        private static int CmpStrProp1(Target p1, Target p2) => CompareOrdinal(p1.StrProp1, p2.StrProp1);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int CmpIntProp2(Target p1, Target p2) => p1.IntProp2.CompareTo(p2.IntProp2);
+        private static int CmpIntProp2(Target p1, Target p2) => p1.IntProp2.CompareTo(p2.IntProp2);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int CmpStrProp2(Target p1, Target p2) => CompareOrdinal(p1.StrProp2, p2.StrProp2);
+        private static int CmpStrProp2(Target p1, Target p2) => CompareOrdinal(p1.StrProp2, p2.StrProp2);
 
         private static int ComposedFuncs(Target aa, Target bb)
         {
@@ -93,14 +84,14 @@ namespace SortFuncGeneration
 
         private static int HandCoded(Target aa, Target bb)
         {
-            int s1 = aa.IntProp1.CompareTo(bb.IntProp1);
-            if (s1 != 0) return s1;
+            int tmp = aa.IntProp1.CompareTo(bb.IntProp1);
+            if (tmp != 0) return tmp;
 
-            int s2 = CompareOrdinal(aa.StrProp1, bb.StrProp1);
-            if (s2 != 0) return s2;
+            tmp = CompareOrdinal(aa.StrProp1, bb.StrProp1);
+            if (tmp != 0) return tmp;
 
-            int s3 = aa.IntProp2.CompareTo(bb.IntProp2);
-            if (s3 != 0) return s3;
+            tmp = aa.IntProp2.CompareTo(bb.IntProp2);
+            if (tmp != 0) return tmp;
 
             return CompareOrdinal(aa.StrProp2, bb.StrProp2);
         }
@@ -141,6 +132,12 @@ namespace SortFuncGeneration
         public void Generated()
         {
             _xs.Sort(_generatedComparer);
+        }
+
+        [Benchmark]
+        public void GeneratedOrderBy()
+        {
+            _xs.OrderBy( m => m, _generatedComparer).Consume(_consumer);
         }
 
         [Benchmark]

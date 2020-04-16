@@ -10,10 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.12.0" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
     <PackageReference Include="FastExpressionCompiler" Version="2.0.0" />
     <PackageReference Include="FsCheck" Version="3.0.0-alpha4" />
-    <PackageReference Include="protobuf-net" Version="3.0.0-alpha.133" />
+    <PackageReference Include="protobuf-net" Version="3.0.0-alpha.143" />
   </ItemGroup>
 
   <ItemGroup>

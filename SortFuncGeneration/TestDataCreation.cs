@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 using FsCheck;
-using SortFuncCommon;
+
 // ReSharper disable ArrangeTypeModifiers
 // ReSharper disable ClassNeverInstantiated.Global
 

@@ -1,11 +1,9 @@
 ﻿using ProtoBuf;
 
-// ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global used implicitly by fscheck
-// ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ClassNeverInstantiated.Global
 
-namespace SortFuncCommon
+namespace SortFuncGeneration
 {
     [ProtoContract]
     public class Target
