@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace SortFuncGeneration
 {
+    // making ComparerAdaptor a readonly struct slowed down sorting, and increased allocs from 136 to 160 bytes
     public class ComparerAdaptor<T> : IComparer<T>
     {
         private readonly Func<T, T, int> _sortFunc;

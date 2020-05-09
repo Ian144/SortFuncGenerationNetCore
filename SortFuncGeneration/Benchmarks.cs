@@ -21,7 +21,7 @@ namespace SortFuncGeneration
         private ComparerAdaptor<Target> _ilEmittedComparer;
         private ComparerAdaptor<Target> _generatedComparer;
         private ComparerAdaptor<Target> _handCoded;
-        private IComparer<Target> _composedFunctionsComparer;
+        private ComparerAdaptor<Target> _composedFunctionsComparer;
 
         private IOrderedEnumerable<Target> _lazyLinqOrderByThenBy;
 
@@ -36,10 +36,10 @@ namespace SortFuncGeneration
 
             var sortBys = new List<SortBy>
             {
-                new SortBy {PropName = "IntProp1", Ascending = true},
-                new SortBy {PropName = "StrProp1", Ascending = true},
-                new SortBy {PropName = "IntProp2", Ascending = true},
-                new SortBy {PropName = "StrProp2", Ascending = true},
+                new SortBy(true, "IntProp1"),
+                new SortBy(true, "StrProp1"),
+                new SortBy(true, "IntProp2"),
+                new SortBy(true, "StrProp2"),
             };
 
             // lazy, evaluated in a benchmark and in the isValid function
