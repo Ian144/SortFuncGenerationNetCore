@@ -27,7 +27,7 @@ namespace SortFuncGeneration
 
         private static readonly Func<Target, Target, int>[] _composedSubFuncs = { CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2 };
 
-        [IterationSetup]
+        [GlobalSetup]
         public void Setup()
         {
             var dir = Path.Combine(Path.GetTempPath(), "targetData.data");
@@ -129,45 +129,24 @@ namespace SortFuncGeneration
         }
 
         [Benchmark]
-        public void Generated()
-        {
-            _xs.Sort(_generatedComparer);
-        }
+        public void Generated() => _xs.Sort(_generatedComparer);
+
+        //[Benchmark]
+        //public void GeneratedOrderBy() => _xs.OrderBy(m => m, _generatedComparer).Consume(_consumer);
+
+        //[Benchmark]
+        //public void GeneratedFastExprComp() => _xs.Sort(_generatedComparerFEC);
+
+        //[Benchmark]
+        //public void ILEmitted() => _xs.Sort(_ilEmittedComparer);
 
         [Benchmark]
-        public void GeneratedOrderBy()
-        {
-            _xs.OrderBy( m => m, _generatedComparer).Consume(_consumer);
-        }
+        public void ComposedFunctions() => _xs.Sort(_composedFunctionsComparer);
 
         [Benchmark]
-        public void GeneratedFastExprComp()
-        {
-            _xs.Sort(_generatedComparerFEC);
-        }
+        public void HandCoded() => _xs.Sort(_handCoded);
 
         [Benchmark]
-        public void ILEmitted()
-        {
-            _xs.Sort(_ilEmittedComparer);
-        }
-
-        [Benchmark]
-        public void ComposedFunctions()
-        {
-            _xs.Sort(_composedFunctionsComparer);
-        }
-
-        [Benchmark]
-        public void HandCoded()
-        {
-            _xs.Sort(_handCoded);
-        }
-
-        [Benchmark]
-        public void HandCodedTernary()
-        {
-            _xs.Sort(_handCodedTernary);
-        }
+        public void HandCodedTernary() => _xs.Sort(_handCodedTernary);
     }
 }
