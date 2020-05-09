@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,18 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="ProgramX.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
     <PackageReference Include="FastExpressionCompiler" Version="2.0.0" />
     <PackageReference Include="FsCheck" Version="3.0.0-alpha4" />
     <PackageReference Include="protobuf-net" Version="3.0.0-alpha.143" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="BenchmarkDotNet.Artifacts\results\" />
   </ItemGroup>
 
 </Project>
