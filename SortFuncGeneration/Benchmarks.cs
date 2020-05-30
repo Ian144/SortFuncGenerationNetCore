@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Engines;
 using static System.String;
 
 
@@ -14,9 +13,8 @@ namespace SortFuncGeneration
     public class Benchmarks
     {
         private List<Target> _xs;
-        private readonly Consumer _consumer = new Consumer();
+        //private readonly Consumer _consumer = new Consumer();
 
-        private ComparerAdaptor<Target> _generatedComparerFEC;
         private ComparerAdaptor<Target> _handCodedTernary;
         private ComparerAdaptor<Target> _ilEmittedComparer;
         private ComparerAdaptor<Target> _generatedComparer;
@@ -26,6 +24,13 @@ namespace SortFuncGeneration
         private IOrderedEnumerable<Target> _lazyLinqOrderByThenBy;
 
         private static readonly Func<Target, Target, int>[] _composedSubFuncs = { CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2 };
+        private readonly List<SortBy> _sortBys = new List<SortBy>
+        {
+            new SortBy(true, "IntProp1"),
+            new SortBy(true, "StrProp1"),
+            new SortBy(true, "IntProp2"),
+            new SortBy(true, "StrProp2"),
+        };
 
         [GlobalSetup]
         public void Setup()
@@ -34,14 +39,6 @@ namespace SortFuncGeneration
             var fs = new FileStream(dir, FileMode.Open, FileAccess.Read);
             _xs = ProtoBuf.Serializer.Deserialize<List<Target>>(fs);
 
-            var sortBys = new List<SortBy>
-            {
-                new SortBy(true, "IntProp1"),
-                new SortBy(true, "StrProp1"),
-                new SortBy(true, "IntProp2"),
-                new SortBy(true, "StrProp2"),
-            };
-
             // lazy, evaluated in a benchmark and in the isValid function
             _lazyLinqOrderByThenBy = _xs
                 .OrderBy(x => x.IntProp1)
@@ -49,10 +46,9 @@ namespace SortFuncGeneration
                 .ThenBy(x => x.IntProp2)
                 .ThenBy(x => x.StrProp2, StringComparer.Ordinal);
 
-            var makeSortFunc = SortFuncCompiler.MakeSortFunc<Target>(sortBys);
+            var makeSortFunc = SortFuncCompiler.MakeSortFunc<Target>(_sortBys);
             _generatedComparer = new ComparerAdaptor<Target>(makeSortFunc);
-            _generatedComparerFEC = new ComparerAdaptor<Target>(SortFuncCompilerFEC.MakeSortFunc<Target>(sortBys));
-            _ilEmittedComparer = new ComparerAdaptor<Target>(ILEmitGenerator.EmitSortFunc<Target>(sortBys));
+            _ilEmittedComparer = new ComparerAdaptor<Target>(ILEmitGenerator.EmitSortFunc<Target>(_sortBys));
             _handCodedTernary = new ComparerAdaptor<Target>(HandCodedTernary);
             _handCoded = new ComparerAdaptor<Target>(HandCoded);
             _composedFunctionsComparer = new ComparerAdaptor<Target>(ComposedFuncs);
@@ -115,14 +111,12 @@ namespace SortFuncGeneration
             var referenceOrdering = _lazyLinqOrderByThenBy.ToList();
 
             var genSorted = _xs.OrderBy(tt => tt, _generatedComparer).ToList();
-            var genTernarySorted = _xs.OrderBy(m => m, _generatedComparerFEC).ToList();
             var handCodedComposedFunctionsSorted = _xs.OrderBy(m => m, _composedFunctionsComparer);
             var handCodedTernarySorted = _xs.OrderBy(m => m, _handCodedTernary).ToList();
             var genEmitSorted = _xs.OrderBy(m => m, _ilEmittedComparer).ToList();
 
             return
                 referenceOrdering.SequenceEqual(genSorted) &&
-                referenceOrdering.SequenceEqual(genTernarySorted) &&
                 referenceOrdering.SequenceEqual(handCodedComposedFunctionsSorted) &&
                 referenceOrdering.SequenceEqual(handCodedTernarySorted) &&
                 referenceOrdering.SequenceEqual(genEmitSorted);
@@ -134,11 +128,8 @@ namespace SortFuncGeneration
         //[Benchmark]
         //public void GeneratedOrderBy() => _xs.OrderBy(m => m, _generatedComparer).Consume(_consumer);
 
-        //[Benchmark]
-        //public void GeneratedFastExprComp() => _xs.Sort(_generatedComparerFEC);
-
-        //[Benchmark]
-        //public void ILEmitted() => _xs.Sort(_ilEmittedComparer);
+        [Benchmark]
+        public void ILEmitted() => _xs.Sort(_ilEmittedComparer);
 
         [Benchmark]
         public void ComposedFunctions() => _xs.Sort(_composedFunctionsComparer);

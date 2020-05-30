@@ -11,14 +11,16 @@ namespace SortFuncGeneration
     class ArbitrarySimpleString : Arbitrary<string>
     {
         //public override Gen<DateTime> Generator => Gen.Choose(-999, 999).Select(i => DateTime.UtcNow.AddMinutes(i));
+        
         public override Gen<string> Generator
         {
             get
             {
-                var myCharGen = Gen.Choose(97, 122).Select(Convert.ToChar);
-                var myCharArrayGen = Gen.ArrayOf(myCharGen).Where(xs => xs.Any());
-                var myStringGen = myCharArrayGen.Select(arr => new string(arr));
-                return myStringGen;
+                var genChar = Gen.Choose(97, 122).Select(Convert.ToChar);
+                return Gen
+                        .ArrayOf(genChar)
+                        .Where(xs => xs.Any())
+                        .Select(arr => new string(arr));
             }
         }
     }
@@ -35,17 +37,10 @@ namespace SortFuncGeneration
         public static void CreateAndPersistData(int size)
         {
             Arb.Register<MyArbitraries>();
-
             var targets = Arb.From<Target>().Generator.Sample(size);
-
-            var dir = Path.Combine(
-                Path.GetTempPath(),
-                "targetData.data");
-
-            using (var fs = new FileStream(dir, FileMode.Create))
-            {
-                ProtoBuf.Serializer.Serialize(fs, targets);
-            }
+            var dir = Path.Combine(Path.GetTempPath(), "targetData.data");
+            using var fs = new FileStream(dir, FileMode.Create);
+            ProtoBuf.Serializer.Serialize(fs, targets);
         }
     }
 }
