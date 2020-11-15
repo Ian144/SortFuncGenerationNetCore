@@ -1,25 +1,22 @@
-﻿using ProtoBuf;
+﻿using System.Diagnostics.CodeAnalysis;
+using ProtoBuf;
 
+//#nullable enable
 // ReSharper disable UnusedAutoPropertyAccessor.Global used implicitly by fscheck
 // ReSharper disable ClassNeverInstantiated.Global
 
 namespace SortFuncGeneration
 {
-    [ProtoContract]
-    public class Target
+    // shortform won't work with protobuf.net, which requires a default ctor
+    //[ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    //public record Target(int IntProp1, int IntProp2, string StrProp1, string StrProp2);
+
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    public record Target
     {
-        [ProtoMember(1)]
-        public int IntProp1 { get; set; }
-
-        [ProtoMember(2)]
-        public int IntProp2 { get; set; }
-
-        [ProtoMember(3)]
-        public string StrProp1 { get; set; }
-
-        [ProtoMember(4)]
-        public string StrProp2 { get; set; }
-
-        public override string ToString() => $"{IntProp1} : {IntProp2} : {StrProp1} : {StrProp2}";
+        public int IntProp1 { get; init; }
+        public int IntProp2 { get; init; }
+        public string StrProp1 { get; init; }
+        public string StrProp2 { get; init; }
     }
 }

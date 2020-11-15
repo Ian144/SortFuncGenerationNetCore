@@ -28,7 +28,7 @@ namespace SortFuncGeneration
                 name: Empty,
                 returnType: returnType,
                 parameterTypes: methodParamTypes,
-                owner: typeof(ILEmitGenerator), // the emited sort function will run x3 slower
+                owner: typeof(ILEmitGenerator),
                 skipVisibility: true);
 
             var il = dynamicMethod.GetILGenerator();
@@ -84,7 +84,7 @@ namespace SortFuncGeneration
                 }
                 else
                 {
-                    throw new ApplicationException($"unsupported property type: {propGet.ReturnType}");                    
+                    throw new ApplicationException($"unsupported property type: {propGet.ReturnType}");
                 }
 
                 bool isLast = ctr == xs.Count - 1;
