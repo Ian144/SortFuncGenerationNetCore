@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Engines;
 using static System.String;
 
 
@@ -13,7 +14,7 @@ namespace SortFuncGeneration
     public class Benchmarks
     {
         private List<Target> _xs;
-        //private readonly Consumer _consumer = new Consumer();
+        private readonly Consumer _consumer = new Consumer();
 
         private ComparerAdaptor<Target> _handCodedTernary;
         private ComparerAdaptor<Target> _ilEmittedComparer;
@@ -138,6 +139,6 @@ namespace SortFuncGeneration
         public void HandCoded() => _xs.Sort(_handCoded);
 
         [Benchmark]
-        public void HandCodedTernary() => _xs.Sort(_handCodedTernary);
+        public void LinqBaseLine() => _lazyLinqOrderByThenBy.Consume(_consumer);
     }
 }
