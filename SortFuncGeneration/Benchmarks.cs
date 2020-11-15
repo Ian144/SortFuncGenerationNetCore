@@ -124,16 +124,19 @@ namespace SortFuncGeneration
         }
 
         [Benchmark]
-        public void Generated() => _xs.Sort(_generatedComparer);
+        public void ExprTreeGenerated() => _xs.Sort(_generatedComparer);
 
-        //[Benchmark]
-        //public void GeneratedOrderBy() => _xs.OrderBy(m => m, _generatedComparer).Consume(_consumer);
+        [Benchmark]
+        public void ExprTreeGeneratedOrderBy() => _xs.OrderBy(m => m, _generatedComparer).Consume(_consumer);
 
         [Benchmark]
         public void ILEmitted() => _xs.Sort(_ilEmittedComparer);
 
         [Benchmark]
         public void ComposedFunctions() => _xs.Sort(_composedFunctionsComparer);
+
+        [Benchmark]
+        public void HandCodedTernary() => _xs.Sort(_handCodedTernary);
 
         [Benchmark]
         public void HandCoded() => _xs.Sort(_handCoded);
