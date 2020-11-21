@@ -21,6 +21,7 @@ namespace SortFuncGeneration
         private ComparerAdaptor<Target> _generatedComparer;
         private ComparerAdaptor<Target> _handCoded;
         private ComparerAdaptor<Target> _composedFunctionsComparer;
+        private ComparerAdaptor<Target> _combinatorFunctionsComparer;
 
         private IOrderedEnumerable<Target> _lazyLinqOrderByThenBy;
 
@@ -32,6 +33,8 @@ namespace SortFuncGeneration
             new SortBy(true, "IntProp2"),
             new SortBy(true, "StrProp2"),
         };
+
+        
 
         [GlobalSetup]
         public void Setup()
@@ -52,6 +55,10 @@ namespace SortFuncGeneration
             _ilEmittedComparer = new ComparerAdaptor<Target>(ILEmitGenerator.EmitSortFunc<Target>(_sortBys));
             _handCodedTernary = new ComparerAdaptor<Target>(HandCodedTernary);
             _handCoded = new ComparerAdaptor<Target>(HandCoded);
+
+            var combineFuncs = CombineFuncs(_composedSubFuncs);
+            _combinatorFunctionsComparer = new ComparerAdaptor<Target>(combineFuncs);
+
             _composedFunctionsComparer = new ComparerAdaptor<Target>(ComposedFuncs);
         }
 
@@ -66,6 +73,25 @@ namespace SortFuncGeneration
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int CmpStrProp2(Target p1, Target p2) => CompareOrdinal(p1.StrProp2, p2.StrProp2);
+
+
+        private static Func<Target, Target, int> CombineFuncs(IEnumerable<Func<Target, Target, int>> subFuncs)
+        {
+            static Func<Target, Target, int> Combine(Func<Target, Target, int> funcA, Func<Target, Target, int> funcB)
+            {
+                if (funcB == null)
+                    return funcA;
+
+                return (tA, tB) =>
+                {
+                    int tmp;
+                    return (tmp = funcA(tA, tB)) != 0 ? tmp : funcB(tA, tB);
+                };
+            }
+
+            return subFuncs.Aggregate(Combine);
+        }
+
 
         private static int ComposedFuncs(Target aa, Target bb)
         {
@@ -112,13 +138,15 @@ namespace SortFuncGeneration
             var referenceOrdering = _lazyLinqOrderByThenBy.ToList();
 
             var genSorted = _xs.OrderBy(tt => tt, _generatedComparer).ToList();
-            var handCodedComposedFunctionsSorted = _xs.OrderBy(m => m, _composedFunctionsComparer);
+            var composedFunctionsSorted = _xs.OrderBy(m => m, _composedFunctionsComparer);
+            var combinatorFunctionsSorted = _xs.OrderBy(m => m, _combinatorFunctionsComparer);
             var handCodedTernarySorted = _xs.OrderBy(m => m, _handCodedTernary).ToList();
             var genEmitSorted = _xs.OrderBy(m => m, _ilEmittedComparer).ToList();
 
             return
                 referenceOrdering.SequenceEqual(genSorted) &&
-                referenceOrdering.SequenceEqual(handCodedComposedFunctionsSorted) &&
+                referenceOrdering.SequenceEqual(composedFunctionsSorted) &&
+                referenceOrdering.SequenceEqual(combinatorFunctionsSorted) &&
                 referenceOrdering.SequenceEqual(handCodedTernarySorted) &&
                 referenceOrdering.SequenceEqual(genEmitSorted);
         }
@@ -134,6 +162,9 @@ namespace SortFuncGeneration
 
         [Benchmark]
         public void ComposedFunctions() => _xs.Sort(_composedFunctionsComparer);
+
+        [Benchmark]
+        public void CombinatorFunctions() => _xs.Sort(_combinatorFunctionsComparer);
 
         [Benchmark]
         public void HandCodedTernary() => _xs.Sort(_handCodedTernary);
