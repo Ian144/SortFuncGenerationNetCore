@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace SortFuncGeneration
 {
-    public static class SortFuncCompiler
+    public static class ExprTreeSortFuncCompiler
     {
         private static readonly MethodInfo _strCompareTo = typeof(string).GetMethod("CompareOrdinal", new[] { typeof(string), typeof(string) });
         private static readonly MethodInfo _intCompareTo = typeof(int).GetMethod("CompareTo", new[] { typeof(int) });

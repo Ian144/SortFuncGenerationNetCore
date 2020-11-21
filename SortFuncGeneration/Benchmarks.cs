@@ -47,7 +47,7 @@ namespace SortFuncGeneration
                 .ThenBy(x => x.IntProp2)
                 .ThenBy(x => x.StrProp2, StringComparer.Ordinal);
 
-            var makeSortFunc = SortFuncCompiler.MakeSortFunc<Target>(_sortBys);
+            var makeSortFunc = ExprTreeSortFuncCompiler.MakeSortFunc<Target>(_sortBys);
             _generatedComparer = new ComparerAdaptor<Target>(makeSortFunc);
             _ilEmittedComparer = new ComparerAdaptor<Target>(ILEmitGenerator.EmitSortFunc<Target>(_sortBys));
             _handCodedTernary = new ComparerAdaptor<Target>(HandCodedTernary);
