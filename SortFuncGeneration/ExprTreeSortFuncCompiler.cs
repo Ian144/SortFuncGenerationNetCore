@@ -8,9 +8,18 @@ namespace SortFuncGeneration
 {
     public static class ExprTreeSortFuncCompiler
     {
-        private static readonly MethodInfo _strCompareTo = typeof(string).GetMethod("CompareOrdinal", new[] { typeof(string), typeof(string) });
-        private static readonly MethodInfo _intCompareTo = typeof(int).GetMethod("CompareTo", new[] { typeof(int) });
+        private static readonly MethodInfo _intCompareTo = GetMethodInfo<int>(x => x.CompareTo(0));
+        private static readonly MethodInfo _strCompareTo = GetMethodInfo<string>(x => string.CompareOrdinal(x, string.Empty));
+        
+        public static MethodInfo GetMethodInfo<T>(Expression<Func<T,int>> expression)
+        {
+            if (expression.Body is MethodCallExpression member)
+                return member.Method;
 
+            throw new ArgumentException("Expression is not a method", nameof(expression));
+        }        
+        
+        
         public static Func<T, T, int> MakeSortFunc<T>(IList<SortBy> sortDescriptors)
         {
             ParameterExpression param1Expr = Expression.Parameter(typeof(T));
@@ -31,21 +40,13 @@ namespace SortFuncGeneration
             MemberExpression propB = Expression.Property(propExp2, sortDescriptor.PropName);
             var (prop1, prop2) = sortDescriptor.Ascending ? (propA, propB) : (propB, propA);
 
-            Expression compareExpr;
-
-            if (prop1.Type == typeof(string))
+            Expression compareExpr = prop1.Type switch
             {
-                compareExpr = Expression.Call(_strCompareTo, prop1, prop2);
-            }
-            else if (prop1.Type == typeof(int))
-            {
-                compareExpr = Expression.Call(prop1, _intCompareTo, prop2);
-            }
-            else
-            {
-                throw new ApplicationException($"unsupported property type: {prop1.Type}");
-            }
-
+                _ when prop1.Type == typeof(string) => Expression.Call(_strCompareTo, prop1, prop2),
+                _ when prop1.Type == typeof(int)    => Expression.Call(prop1, _intCompareTo, prop2),
+                _                                   => throw new ApplicationException($"unsupported property type: {prop1.Type}")
+            };
+            
             IEnumerable<ParameterExpression> variables = new[] { result };
 
             IEnumerable<Expression> expressions = new Expression[]

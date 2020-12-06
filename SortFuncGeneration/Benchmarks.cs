@@ -34,8 +34,6 @@ namespace SortFuncGeneration
             new SortBy(true, "StrProp2"),
         };
 
-        
-
         [GlobalSetup]
         public void Setup()
         {
@@ -79,8 +77,8 @@ namespace SortFuncGeneration
         {
             static Func<Target, Target, int> Combine(Func<Target, Target, int> funcA, Func<Target, Target, int> funcB)
             {
-                if (funcB == null)
-                    return funcA;
+                //if (funcB == null)
+                //    return funcA;
 
                 return (tA, tB) =>
                 {
@@ -91,7 +89,6 @@ namespace SortFuncGeneration
 
             return subFuncs.Aggregate(Combine);
         }
-
 
         private static int ComposedFuncs(Target aa, Target bb)
         {
