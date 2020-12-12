@@ -26,7 +26,7 @@ namespace SortFuncGeneration
         private IOrderedEnumerable<Target> _lazyLinqOrderByThenBy;
 
         private static readonly Func<Target, Target, int>[] _composedSubFuncs = { CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2 };
-        private readonly List<SortBy> _sortBys = new List<SortBy>
+        private readonly List<SortBy> _sortBys = new()
         {
             new SortBy(true, "IntProp1"),
             new SortBy(true, "StrProp1"),
@@ -72,22 +72,15 @@ namespace SortFuncGeneration
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int CmpStrProp2(Target p1, Target p2) => CompareOrdinal(p1.StrProp2, p2.StrProp2);
 
-
-        private static Func<Target, Target, int> CombineFuncs(IEnumerable<Func<Target, Target, int>> subFuncs)
+        private static Func<Target, Target, int> CombineFuncs(IEnumerable<Func<Target, Target, int>> funcs)
         {
-            static Func<Target, Target, int> Combine(Func<Target, Target, int> funcA, Func<Target, Target, int> funcB)
-            {
-                //if (funcB == null)
-                //    return funcA;
-
-                return (tA, tB) =>
+            static Func<Target, Target, int> Combine(Func<Target, Target, int> funcA, Func<Target, Target, int> funcB) => (tA, tB) =>
                 {
                     int tmp;
                     return (tmp = funcA(tA, tB)) != 0 ? tmp : funcB(tA, tB);
                 };
-            }
 
-            return subFuncs.Aggregate(Combine);
+            return funcs.Aggregate(Combine);
         }
 
         private static int ComposedFuncs(Target aa, Target bb)

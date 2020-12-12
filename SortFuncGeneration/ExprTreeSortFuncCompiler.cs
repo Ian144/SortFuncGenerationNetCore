@@ -19,7 +19,6 @@ namespace SortFuncGeneration
             throw new ArgumentException("Expression is not a method", nameof(expression));
         }        
         
-        
         public static Func<T, T, int> MakeSortFunc<T>(IList<SortBy> sortDescriptors)
         {
             ParameterExpression param1Expr = Expression.Parameter(typeof(T));
