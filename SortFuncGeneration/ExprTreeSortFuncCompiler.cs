@@ -19,7 +19,7 @@ namespace SortFuncGeneration
             throw new ArgumentException("Expression is not a method", nameof(expression));
         }        
         
-        public static Func<T, T, int> MakeSortFunc<T>(IList<SortBy> sortDescriptors)
+        public static Func<T, T, int> MakeSortFunc<T>(IList<SortDescriptor> sortDescriptors)
         {
             ParameterExpression param1Expr = Expression.Parameter(typeof(T));
             ParameterExpression param2Expr = Expression.Parameter(typeof(T));
@@ -29,7 +29,7 @@ namespace SortFuncGeneration
         }
 
         private static BlockExpression MakePropertyCompareBlock(
-            SortBy sortDescriptor,
+            SortDescriptor sortDescriptor,
             ParameterExpression propExp1,
             ParameterExpression propExp2,
             LabelTarget labelReturn,
@@ -59,7 +59,7 @@ namespace SortFuncGeneration
             return Expression.Block(variables, expressions);
         }
 
-        private static BlockExpression MakeCompositeCompare(ParameterExpression param1Expr, ParameterExpression param2Expr, IEnumerable<SortBy> sortBys)
+        private static BlockExpression MakeCompositeCompare(ParameterExpression param1Expr, ParameterExpression param2Expr, IEnumerable<SortDescriptor> sortBys)
         {
             ParameterExpression result = Expression.Variable(typeof(int), "result");
             LabelTarget labelReturn = Expression.Label(typeof(int));

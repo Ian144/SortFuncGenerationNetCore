@@ -14,7 +14,7 @@ namespace SortFuncGeneration
         private static readonly MethodInfo _strCompareOrdinal = typeof(string).GetMethod("CompareOrdinal", new[] { typeof(string), typeof(string) });
         private static readonly MethodInfo _intCompareTo = typeof(int).GetMethod("CompareTo", new[] { typeof(int) });
         
-        public static Func<T, T, int> EmitSortFunc<T>(List<SortBy> sortBys)
+        public static Func<T, T, int> EmitSortFunc<T>(List<SortDescriptor> sortBys)
         {
             var xs = sortBys.Select(sd => (typeof(T).GetMethod($"get_{sd.PropName}"), sd.Ascending)).ToList();
 

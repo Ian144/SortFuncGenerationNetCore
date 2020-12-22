@@ -13,52 +13,55 @@ namespace SortFuncGeneration
     [MemoryDiagnoser]
     public class Benchmarks
     {
-        private List<Target> _xs;
-        private readonly Consumer _consumer = new Consumer();
+        private static readonly List<SortDescriptor> _sortBys = new()
+        {
+            new SortDescriptor(true, "IntProp1"),
+            new SortDescriptor(true, "StrProp1"),
+            new SortDescriptor(true, "IntProp2"),
+            new SortDescriptor(true, "StrProp2"),
+        };        
 
-        private ComparerAdaptor<Target> _handCodedTernary;
-        private ComparerAdaptor<Target> _ilEmittedComparer;
-        private ComparerAdaptor<Target> _generatedComparer;
-        private ComparerAdaptor<Target> _handCoded;
-        private ComparerAdaptor<Target> _composedFunctionsComparer;
-        private ComparerAdaptor<Target> _combinatorFunctionsComparer;
+        private static readonly Func<Target, Target, int>[] _composedSubFuncs = { CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2 };        
+        
+        private static List<Target> _source;
+        private static List<Target> _xs;
+        
+        private static readonly Consumer _consumer = new();
+
+        private static readonly ComparerAdaptor<Target> _handCodedTernary            = new( HandCodedTernary );
+        private static readonly ComparerAdaptor<Target> _ilEmittedComparer           = new( ILEmitGenerator.EmitSortFunc<Target>(_sortBys) );
+        private static readonly ComparerAdaptor<Target> _generatedComparer           = new( ExprTreeSortFuncCompiler.MakeSortFunc<Target>(_sortBys) );
+        private static readonly ComparerAdaptor<Target> _handCoded                   = new( HandCoded );
+        private static readonly ComparerAdaptor<Target> _composedFunctionsComparer   = new( ComposedFuncs );
+        private static readonly ComparerAdaptor<Target> _combinatorFunctionsComparer = new( CombineFuncs(_composedSubFuncs) );
 
         private IOrderedEnumerable<Target> _lazyLinqOrderByThenBy;
-
-        private static readonly Func<Target, Target, int>[] _composedSubFuncs = { CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2 };
-        private readonly List<SortBy> _sortBys = new()
-        {
-            new SortBy(true, "IntProp1"),
-            new SortBy(true, "StrProp1"),
-            new SortBy(true, "IntProp2"),
-            new SortBy(true, "StrProp2"),
-        };
 
         [GlobalSetup]
         public void Setup()
         {
             var dir = Path.Combine(Path.GetTempPath(), "targetData.data");
             var fs = new FileStream(dir, FileMode.Open, FileAccess.Read);
-            _xs = ProtoBuf.Serializer.Deserialize<List<Target>>(fs);
-
+            _source = ProtoBuf.Serializer.Deserialize<List<Target>>(fs);
+            _xs = new List<Target>(_source);
+            
             // lazy, evaluated in a benchmark and in the isValid function
-            _lazyLinqOrderByThenBy = _xs
+            _lazyLinqOrderByThenBy = _source
                 .OrderBy(x => x.IntProp1)
                 .ThenBy(x => x.StrProp1, StringComparer.Ordinal)
                 .ThenBy(x => x.IntProp2)
                 .ThenBy(x => x.StrProp2, StringComparer.Ordinal);
-
-            var makeSortFunc = ExprTreeSortFuncCompiler.MakeSortFunc<Target>(_sortBys);
-            _generatedComparer = new ComparerAdaptor<Target>(makeSortFunc);
-            _ilEmittedComparer = new ComparerAdaptor<Target>(ILEmitGenerator.EmitSortFunc<Target>(_sortBys));
-            _handCodedTernary = new ComparerAdaptor<Target>(HandCodedTernary);
-            _handCoded = new ComparerAdaptor<Target>(HandCoded);
-
-            var combineFuncs = CombineFuncs(_composedSubFuncs);
-            _combinatorFunctionsComparer = new ComparerAdaptor<Target>(combineFuncs);
-
-            _composedFunctionsComparer = new ComparerAdaptor<Target>(ComposedFuncs);
         }
+        
+        [IterationSetup]
+        public void ISetup()
+        {
+            for (int ctr = 0; ctr < _source.Count; ++ctr)
+            {
+                _xs[ctr] = _source[ctr];
+            }
+        }        
+        
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int CmpIntProp1(Target p1, Target p2) => p1.IntProp1.CompareTo(p2.IntProp1);
@@ -74,10 +77,10 @@ namespace SortFuncGeneration
 
         private static Func<Target, Target, int> CombineFuncs(IEnumerable<Func<Target, Target, int>> funcs)
         {
-            static Func<Target, Target, int> Combine(Func<Target, Target, int> funcA, Func<Target, Target, int> funcB) => (tA, tB) =>
+            static Func<Target, Target, int> Combine(Func<Target, Target, int> fA, Func<Target, Target, int> fb) => (tA, tB) =>
                 {
                     int tmp;
-                    return (tmp = funcA(tA, tB)) != 0 ? tmp : funcB(tA, tB);
+                    return (tmp = fA(tA, tB)) != 0 ? tmp : fb(tA, tB);
                 };
 
             return funcs.Aggregate(Combine);
@@ -124,14 +127,15 @@ namespace SortFuncGeneration
         public bool IsValid()
         {
             Setup();
+            ISetup();
 
             var referenceOrdering = _lazyLinqOrderByThenBy.ToList();
 
-            var genSorted = _xs.OrderBy(tt => tt, _generatedComparer).ToList();
-            var composedFunctionsSorted = _xs.OrderBy(m => m, _composedFunctionsComparer);
-            var combinatorFunctionsSorted = _xs.OrderBy(m => m, _combinatorFunctionsComparer);
-            var handCodedTernarySorted = _xs.OrderBy(m => m, _handCodedTernary).ToList();
-            var genEmitSorted = _xs.OrderBy(m => m, _ilEmittedComparer).ToList();
+            var genSorted = _source.OrderBy(tt => tt, _generatedComparer).ToList();
+            var composedFunctionsSorted = _source.OrderBy(m => m, _composedFunctionsComparer);
+            var combinatorFunctionsSorted = _source.OrderBy(m => m, _combinatorFunctionsComparer);
+            var handCodedTernarySorted = _source.OrderBy(m => m, _handCodedTernary).ToList();
+            var genEmitSorted = _source.OrderBy(m => m, _ilEmittedComparer).ToList();
 
             return
                 referenceOrdering.SequenceEqual(genSorted) &&

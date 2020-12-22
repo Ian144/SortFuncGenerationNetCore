@@ -9,12 +9,12 @@ namespace SortFuncGeneration
     {
         static void Main()
         {
-            TestDataCreation.CreateAndPersistData(100000);
+            TestDataCreation.CreateAndPersistData(500000);
 
             var bmark = new Benchmarks();
             if (bmark.IsValid())
             {
-                //IConfig cfg = DefaultConfig.Instance.With( Job.RyuJitX64, Job.VeryLongRun).With(ConfigOptions.DisableOptimizationsValidator);
+                //IConfig cfg = DefaultConfig.Instance.With( Job.RyuJitX64, Job.VeryLongRun);
                 IConfig cfg = DefaultConfig.Instance.AddJob(Job.RyuJitX64);
                 //IConfig cfg = DefaultConfig.Instance.AddJob(Job.ShortRun);
 
