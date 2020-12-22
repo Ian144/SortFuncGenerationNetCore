@@ -25,7 +25,7 @@ namespace SortFuncGeneration
         private static readonly Func<Target, Target, int>[] _composedSubFuncs = { CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2 };        
         
         private static List<Target> _source;
-        private static List<Target> _sortTargets;
+        private static Target[] _sortTargets;
         
         private static readonly Consumer _consumer = new();
 
@@ -51,7 +51,7 @@ namespace SortFuncGeneration
             var dir = Path.Combine(Path.GetTempPath(), "targetData.data");
             var fs = new FileStream(dir, FileMode.Open, FileAccess.Read);
             _source = ProtoBuf.Serializer.Deserialize<List<Target>>(fs);
-            _sortTargets = new List<Target>(_source);
+            _sortTargets = new Target[_source.Count];
             
             // lazy, evaluated in a benchmark and in the isValid function
             _lazyLinqOrderByThenBy = _source
@@ -64,12 +64,12 @@ namespace SortFuncGeneration
         [IterationSetup]
         public void ISetup()
         {
+            // unsort _sortTargets. List.Sort is in-place, previous iterations will have sorted _sortTargets, resulting in sorting already sorted data
             for (int ctr = 0; ctr < _source.Count; ++ctr)
             {
                 _sortTargets[ctr] = _source[ctr];
             }
         }        
-        
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int CmpIntProp1(Target p1, Target p2) => p1.IntProp1.CompareTo(p2.IntProp1);
@@ -154,30 +154,30 @@ namespace SortFuncGeneration
         }
 
         [Benchmark]
-        public void ExprTreeGenerated() => _sortTargets.Sort(_generatedComparer);
+        public void ExprTreeGenerated() => Array.Sort(_sortTargets, _generatedComparer);
 
         [Benchmark]
-        public void ExprTreeGeneratedOrderBy() => _sortTargets.OrderBy(m => m, _generatedComparer).Consume(_consumer);
+        public void ILEmitted() => Array.Sort(_sortTargets, _ilEmittedComparer);
 
         [Benchmark]
-        public void ILEmitted() => _sortTargets.Sort(_ilEmittedComparer);
+        public void ComposedFunctions() => Array.Sort(_sortTargets, _composedFunctionsComparer);
 
         [Benchmark]
-        public void ComposedFunctions() => _sortTargets.Sort(_composedFunctionsComparer);
+        public void CombinatorFunctions() => Array.Sort(_sortTargets, _combinatorFunctionsComparer);
 
         [Benchmark]
-        public void CombinatorFunctions() => _sortTargets.Sort(_combinatorFunctionsComparer);
+        public void HandCodedTernary() => Array.Sort(_sortTargets, _handCodedTernary);
 
         [Benchmark]
-        public void HandCodedTernary() => _sortTargets.Sort(_handCodedTernary);
+        public void HandCoded() => Array.Sort(_sortTargets, _handCoded);
 
         [Benchmark]
-        public void HandCoded() => _sortTargets.Sort(_handCoded);
-
-        [Benchmark]
-        public void LinqBaseLine() => _lazyLinqOrderByThenBy.Consume(_consumer);
+        public void Nito() => Array.Sort(_sortTargets, _nitoComparer);
         
         [Benchmark]
-        public void Nito() => _sortTargets.Sort(_nitoComparer);
+        public void ExprTreeGeneratedOrderBy() => _sortTargets.OrderBy(m => m, _generatedComparer).Consume(_consumer);
+        
+        [Benchmark]
+        public void LinqBaseLine() => _lazyLinqOrderByThenBy.Consume(_consumer);
     }
 }
