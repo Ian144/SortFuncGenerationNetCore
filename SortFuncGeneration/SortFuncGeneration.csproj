@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
     <PackageReference Include="FsCheck" Version="3.0.0-alpha4" />
+    <PackageReference Include="Nito.Comparers" Version="6.1.0" />
     <PackageReference Include="protobuf-net" Version="3.0.73" />
   </ItemGroup>
 

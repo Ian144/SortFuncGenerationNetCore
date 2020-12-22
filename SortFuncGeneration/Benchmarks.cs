@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
+using Nito.Comparers;
 using static System.String;
 
 
@@ -24,7 +25,7 @@ namespace SortFuncGeneration
         private static readonly Func<Target, Target, int>[] _composedSubFuncs = { CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2 };        
         
         private static List<Target> _source;
-        private static List<Target> _xs;
+        private static List<Target> _sortTargets;
         
         private static readonly Consumer _consumer = new();
 
@@ -35,6 +36,13 @@ namespace SortFuncGeneration
         private static readonly ComparerAdaptor<Target> _composedFunctionsComparer   = new( ComposedFuncs );
         private static readonly ComparerAdaptor<Target> _combinatorFunctionsComparer = new( CombineFuncs(_composedSubFuncs) );
 
+        private static readonly IComparer<Target> _nitoComparer =
+            ComparerBuilder.For<Target>()
+                .OrderBy(p => p.IntProp1)
+                .ThenBy(p => p.StrProp1, StringComparer.Ordinal)
+                .ThenBy(p => p.IntProp2)
+                .ThenBy(p => p.StrProp2, StringComparer.Ordinal);
+
         private IOrderedEnumerable<Target> _lazyLinqOrderByThenBy;
 
         [GlobalSetup]
@@ -43,7 +51,7 @@ namespace SortFuncGeneration
             var dir = Path.Combine(Path.GetTempPath(), "targetData.data");
             var fs = new FileStream(dir, FileMode.Open, FileAccess.Read);
             _source = ProtoBuf.Serializer.Deserialize<List<Target>>(fs);
-            _xs = new List<Target>(_source);
+            _sortTargets = new List<Target>(_source);
             
             // lazy, evaluated in a benchmark and in the isValid function
             _lazyLinqOrderByThenBy = _source
@@ -58,7 +66,7 @@ namespace SortFuncGeneration
         {
             for (int ctr = 0; ctr < _source.Count; ++ctr)
             {
-                _xs[ctr] = _source[ctr];
+                _sortTargets[ctr] = _source[ctr];
             }
         }        
         
@@ -146,27 +154,30 @@ namespace SortFuncGeneration
         }
 
         [Benchmark]
-        public void ExprTreeGenerated() => _xs.Sort(_generatedComparer);
+        public void ExprTreeGenerated() => _sortTargets.Sort(_generatedComparer);
 
         [Benchmark]
-        public void ExprTreeGeneratedOrderBy() => _xs.OrderBy(m => m, _generatedComparer).Consume(_consumer);
+        public void ExprTreeGeneratedOrderBy() => _sortTargets.OrderBy(m => m, _generatedComparer).Consume(_consumer);
 
         [Benchmark]
-        public void ILEmitted() => _xs.Sort(_ilEmittedComparer);
+        public void ILEmitted() => _sortTargets.Sort(_ilEmittedComparer);
 
         [Benchmark]
-        public void ComposedFunctions() => _xs.Sort(_composedFunctionsComparer);
+        public void ComposedFunctions() => _sortTargets.Sort(_composedFunctionsComparer);
 
         [Benchmark]
-        public void CombinatorFunctions() => _xs.Sort(_combinatorFunctionsComparer);
+        public void CombinatorFunctions() => _sortTargets.Sort(_combinatorFunctionsComparer);
 
         [Benchmark]
-        public void HandCodedTernary() => _xs.Sort(_handCodedTernary);
+        public void HandCodedTernary() => _sortTargets.Sort(_handCodedTernary);
 
         [Benchmark]
-        public void HandCoded() => _xs.Sort(_handCoded);
+        public void HandCoded() => _sortTargets.Sort(_handCoded);
 
         [Benchmark]
         public void LinqBaseLine() => _lazyLinqOrderByThenBy.Consume(_consumer);
+        
+        [Benchmark]
+        public void Nito() => _sortTargets.Sort(_nitoComparer);
     }
 }
