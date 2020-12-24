@@ -59,12 +59,12 @@ namespace SortFuncGeneration
             return Expression.Block(variables, expressions);
         }
 
-        private static BlockExpression MakeCompositeCompare(ParameterExpression param1Expr, ParameterExpression param2Expr, IEnumerable<SortDescriptor> sortBys)
+        private static BlockExpression MakeCompositeCompare(ParameterExpression param1Expr, ParameterExpression param2Expr, IEnumerable<SortDescriptor> sortDescriptors)
         {
             ParameterExpression result = Expression.Variable(typeof(int), "result");
             LabelTarget labelReturn = Expression.Label(typeof(int));
             LabelExpression labelExpression = Expression.Label(labelReturn, result);
-            IEnumerable<Expression> compareBlocks = sortBys.Select(propName => MakePropertyCompareBlock(propName, param1Expr, param2Expr, labelReturn, result));
+            IEnumerable<Expression> compareBlocks = sortDescriptors.Select(sd => MakePropertyCompareBlock(sd, param1Expr, param2Expr, labelReturn, result));
             return Expression.Block(new[] { result }, compareBlocks.Append(labelExpression));
         }
     }

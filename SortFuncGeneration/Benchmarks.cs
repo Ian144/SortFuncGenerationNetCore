@@ -29,6 +29,7 @@ namespace SortFuncGeneration
         
         private static readonly Consumer _consumer = new();
 
+        private static readonly InlineComparerAdaptor2 _handCodedInline              = new ();
         private static readonly ComparerAdaptor<Target> _handCodedTernary            = new( HandCodedTernary );
         private static readonly ComparerAdaptor<Target> _ilEmittedComparer           = new( ILEmitGenerator.EmitSortFunc<Target>(_sortBys) );
         private static readonly ComparerAdaptor<Target> _generatedComparer           = new( ExprTreeSortFuncCompiler.MakeSortFunc<Target>(_sortBys) );
@@ -143,6 +144,7 @@ namespace SortFuncGeneration
             var composedFunctionsSorted = _source.OrderBy(m => m, _composedFunctionsComparer);
             var combinatorFunctionsSorted = _source.OrderBy(m => m, _combinatorFunctionsComparer);
             var handCodedTernarySorted = _source.OrderBy(m => m, _handCodedTernary).ToList();
+            var inlineSorted = _source.OrderBy(m => m, _handCodedInline).ToList();
             var genEmitSorted = _source.OrderBy(m => m, _ilEmittedComparer).ToList();
 
             return
@@ -150,6 +152,7 @@ namespace SortFuncGeneration
                 referenceOrdering.SequenceEqual(composedFunctionsSorted) &&
                 referenceOrdering.SequenceEqual(combinatorFunctionsSorted) &&
                 referenceOrdering.SequenceEqual(handCodedTernarySorted) &&
+                referenceOrdering.SequenceEqual(inlineSorted) &&
                 referenceOrdering.SequenceEqual(genEmitSorted);
         }
 
@@ -167,6 +170,9 @@ namespace SortFuncGeneration
 
         [Benchmark]
         public void HandCodedTernary() => Array.Sort(_sortTargets, _handCodedTernary);
+        
+        [Benchmark]
+        public void HandCodedInline() => Array.Sort(_sortTargets, _handCodedInline);        
 
         [Benchmark]
         public void HandCoded() => Array.Sort(_sortTargets, _handCoded);

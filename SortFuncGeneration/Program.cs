@@ -14,7 +14,7 @@ namespace SortFuncGeneration
             var bmark = new Benchmarks();
             if (bmark.IsValid())
             {
-                //IConfig cfg = DefaultConfig.Instance.With( Job.RyuJitX64, Job.VeryLongRun);
+                //IConfig cfg = DefaultConfig.Instance.AddJob(Job.VeryLongRun);
                 IConfig cfg = DefaultConfig.Instance.AddJob(Job.RyuJitX64);
                 //IConfig cfg = DefaultConfig.Instance.AddJob(Job.ShortRun);
 
