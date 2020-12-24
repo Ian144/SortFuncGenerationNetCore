@@ -29,11 +29,13 @@ namespace SortFuncGeneration
         
         private static readonly Consumer _consumer = new();
 
-        private static readonly InlineComparerAdaptor2 _handCodedInline              = new ();
+        private static readonly InlineComparer _inlineComparer                       = new ();
+        private static readonly IntInlineComparer _intInlineComparer                 = new ();
         private static readonly ComparerAdaptor<Target> _handCodedTernary            = new( HandCodedTernary );
         private static readonly ComparerAdaptor<Target> _ilEmittedComparer           = new( ILEmitGenerator.EmitSortFunc<Target>(_sortBys) );
         private static readonly ComparerAdaptor<Target> _generatedComparer           = new( ExprTreeSortFuncCompiler.MakeSortFunc<Target>(_sortBys) );
         private static readonly ComparerAdaptor<Target> _handCoded                   = new( HandCoded );
+        private static readonly ComparerAdaptor<Target> _intInlineHandCoded          = new( IntInline );       
         private static readonly ComparerAdaptor<Target> _composedFunctionsComparer   = new( ComposedFuncs );
         private static readonly ComparerAdaptor<Target> _combinatorFunctionsComparer = new( CombineFuncs(_composedSubFuncs) );
 
@@ -133,6 +135,24 @@ namespace SortFuncGeneration
                         : CompareOrdinal(xx.StrProp2, aa.StrProp2);
         }
 
+        
+        private static int IntInline(Target xx, Target yy)
+        {
+            int xxIp1 = xx.IntProp1;
+            int aaIp1 = yy.IntProp1;
+            if (xxIp1 < aaIp1) return -1;
+            if (xxIp1 > aaIp1) return 1;
+           
+            int tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
+            if(tmp != 0)
+                return tmp;
+
+            int xxIp2 = xx.IntProp2;
+            int aaIp2 = yy.IntProp2;
+            if (xxIp2 < aaIp2) return -1;
+            return xxIp2 > aaIp2 ? 1 : CompareOrdinal(xx.StrProp2, yy.StrProp2);
+        }        
+        
         public bool IsValid()
         {
             Setup();
@@ -144,7 +164,8 @@ namespace SortFuncGeneration
             var composedFunctionsSorted = _source.OrderBy(m => m, _composedFunctionsComparer);
             var combinatorFunctionsSorted = _source.OrderBy(m => m, _combinatorFunctionsComparer);
             var handCodedTernarySorted = _source.OrderBy(m => m, _handCodedTernary).ToList();
-            var inlineSorted = _source.OrderBy(m => m, _handCodedInline).ToList();
+            var inlineSorted = _source.OrderBy(m => m, _inlineComparer ).ToList();
+            var intInlineSorted = _source.OrderBy(m => m, _intInlineComparer ).ToList();
             var genEmitSorted = _source.OrderBy(m => m, _ilEmittedComparer).ToList();
 
             return
@@ -153,6 +174,7 @@ namespace SortFuncGeneration
                 referenceOrdering.SequenceEqual(combinatorFunctionsSorted) &&
                 referenceOrdering.SequenceEqual(handCodedTernarySorted) &&
                 referenceOrdering.SequenceEqual(inlineSorted) &&
+                referenceOrdering.SequenceEqual(intInlineSorted) &&
                 referenceOrdering.SequenceEqual(genEmitSorted);
         }
 
@@ -172,10 +194,16 @@ namespace SortFuncGeneration
         public void HandCodedTernary() => Array.Sort(_sortTargets, _handCodedTernary);
         
         [Benchmark]
-        public void HandCodedInline() => Array.Sort(_sortTargets, _handCodedInline);        
+        public void IntInlineComparer() => Array.Sort(_sortTargets, _intInlineComparer);
 
         [Benchmark]
+        public void InlineComparer() => Array.Sort(_sortTargets, _inlineComparer);        
+        
+        [Benchmark]
         public void HandCoded() => Array.Sort(_sortTargets, _handCoded);
+        
+        [Benchmark]
+        public void IntInlineHandCoded() => Array.Sort(_sortTargets, _intInlineHandCoded);        
 
         [Benchmark]
         public void Nito() => Array.Sort(_sortTargets, _nitoComparer);

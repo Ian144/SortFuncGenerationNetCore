@@ -15,7 +15,7 @@ namespace SortFuncGeneration
     
     
     // making ComparerAdaptor a readonly struct slowed down sorting, and increased allocs from 136 to 160 bytes
-    public class InlineComparerAdaptor : IComparer<Target>
+    public class InlineComparer : IComparer<Target>
     {
         public int Compare(Target xx, Target yy)
         {
@@ -30,27 +30,41 @@ namespace SortFuncGeneration
         } 
     }    
     
+    //public class InlineComparer2 : IComparer<Target>
+    //{
+    //    public int Compare(Target xx, Target yy)
+    //    {
+    //        int tmp;
+    //        return xx.IntProp1 < yy.IntProp1
+    //                ? -1
+    //                : xx.IntProp1 > yy.IntProp1
+    //                    ? 1
+    //                    :(tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1)) != 0
+    //                    ? tmp
+    //                    : xx.IntProp2< yy.IntProp2
+    //                        ? -1
+    //                        : xx.IntProp2 > yy.IntProp2
+    //                            ? 1
+    //                            : CompareOrdinal(xx.StrProp2, yy.StrProp2);
+    //    } 
+    //}
+
     
-    public class InlineComparerAdaptor2 : IComparer<Target>
+    public class IntInlineComparer : IComparer<Target>
     {
         public int Compare(Target xx, Target yy)
         {
-            int xxIp1 = xx.IntProp1;
-            int aaIp1 = yy.IntProp1;
-            if (xxIp1 < aaIp1) return -1;
-            if (xxIp1 > aaIp1) return 1;
-           
+            if (xx.IntProp1 < yy.IntProp1) return -1;
+            if (xx.IntProp1 > yy.IntProp1) return 1;
+
             int tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
-            if(tmp != 0)
+            if (tmp != 0)
                 return tmp;
 
-            int xxIp2 = xx.IntProp2;
-            int aaIp2 = yy.IntProp2;
-            if (xxIp2 < aaIp2) return -1;
-            if (xxIp2 > aaIp2) return 1;
-            
-            return CompareOrdinal(xx.StrProp2, yy.StrProp2);
+            if (xx.IntProp2 < yy.IntProp2) return -1;
+            return xx.IntProp2 > yy.IntProp2 
+                ? 1 
+                : CompareOrdinal(xx.StrProp2, yy.StrProp2);
         } 
     }     
-    
 }

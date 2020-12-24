@@ -9,7 +9,7 @@ namespace SortFuncGeneration
     {
         static void Main()
         {
-            TestDataCreation.CreateAndPersistData(500000);
+            TestDataCreation.CreateAndPersistData(50000);
 
             var bmark = new Benchmarks();
             if (bmark.IsValid())
