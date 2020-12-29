@@ -25,7 +25,7 @@ namespace SortFuncGeneration
         private static readonly Func<Target, Target, int>[] _composedSubFuncs = { CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2 };        
         
         private static List<Target> _source;
-        private static Target[] _sortTargets;
+        private static List<Target> _sortTargets;
         
         private static readonly Consumer _consumer = new();
 
@@ -54,8 +54,12 @@ namespace SortFuncGeneration
             var dir = Path.Combine(Path.GetTempPath(), "targetData.data");
             var fs = new FileStream(dir, FileMode.Open, FileAccess.Read);
             _source = ProtoBuf.Serializer.Deserialize<List<Target>>(fs);
-            _sortTargets = new Target[_source.Count];
-            
+            _sortTargets = new List<Target>(_source.Count);
+            foreach (var t in _source)
+            {
+                _sortTargets.Add(t);
+            }
+
             // lazy, evaluated in a benchmark and in the isValid function
             _lazyLinqOrderByThenBy = _source
                 .OrderBy(x => x.IntProp1)
@@ -67,7 +71,7 @@ namespace SortFuncGeneration
         [IterationSetup]
         public void ISetup()
         {
-            // unsort _sortTargets. List.Sort is in-place, previous iterations will have sorted _sortTargets, resulting in sorting already sorted data
+            // unsort _sortTargets. _sortTargets.Sort is place, previous iterations will have sorted _sortTargets, resulting in sorting already sorted data
             for (int ctr = 0; ctr < _source.Count; ++ctr)
             {
                 _sortTargets[ctr] = _source[ctr];
@@ -160,13 +164,21 @@ namespace SortFuncGeneration
 
             var referenceOrdering = _lazyLinqOrderByThenBy.ToList();
 
-            var genSorted = _source.OrderBy(tt => tt, _generatedComparer).ToList();
+            var genSorted = _source.OrderBy(tt => tt, _generatedComparer);
             var composedFunctionsSorted = _source.OrderBy(m => m, _composedFunctionsComparer);
             var combinatorFunctionsSorted = _source.OrderBy(m => m, _combinatorFunctionsComparer);
-            var handCodedTernarySorted = _source.OrderBy(m => m, _handCodedTernary).ToList();
-            var inlineSorted = _source.OrderBy(m => m, _inlineComparer ).ToList();
-            var intInlineSorted = _source.OrderBy(m => m, _intInlineComparer ).ToList();
-            var genEmitSorted = _source.OrderBy(m => m, _ilEmittedComparer).ToList();
+            var handCodedTernarySorted = _source.OrderBy(m => m, _handCodedTernary);
+            var inlineSorted = _source.OrderBy(m => m, _inlineComparer );
+            var intInlineSorted = _source.OrderBy(m => m, _intInlineComparer );
+            var genEmitSorted = _source.OrderBy(m => m, _ilEmittedComparer);
+
+            //bool b1 = referenceOrdering.SequenceEqual(genSorted);
+            //bool b2 = referenceOrdering.SequenceEqual(composedFunctionsSorted);
+            //bool b3 = referenceOrdering.SequenceEqual(combinatorFunctionsSorted);
+            //bool b4 = referenceOrdering.SequenceEqual(handCodedTernarySorted);
+            //bool b5 = referenceOrdering.SequenceEqual(inlineSorted);
+            //bool b6 = referenceOrdering.SequenceEqual(intInlineSorted);
+            //bool b7 = referenceOrdering.SequenceEqual(genEmitSorted);
 
             return
                 referenceOrdering.SequenceEqual(genSorted) &&
@@ -179,34 +191,34 @@ namespace SortFuncGeneration
         }
 
         [Benchmark]
-        public void ExprTreeGenerated() => Array.Sort(_sortTargets, _generatedComparer);
+        public void ExprTreeGenerated() => _sortTargets.Sort(_generatedComparer);
 
         [Benchmark]
-        public void ILEmitted() => Array.Sort(_sortTargets, _ilEmittedComparer);
+        public void ILEmitted() => _sortTargets.Sort(_ilEmittedComparer);
 
         [Benchmark]
-        public void ComposedFunctions() => Array.Sort(_sortTargets, _composedFunctionsComparer);
+        public void ComposedFunctions() => _sortTargets.Sort(_composedFunctionsComparer);
 
         [Benchmark]
-        public void CombinatorFunctions() => Array.Sort(_sortTargets, _combinatorFunctionsComparer);
+        public void CombinatorFunctions() => _sortTargets.Sort(_combinatorFunctionsComparer);
 
         [Benchmark]
-        public void HandCodedTernary() => Array.Sort(_sortTargets, _handCodedTernary);
+        public void HandCodedTernary() => _sortTargets.Sort(_handCodedTernary);
         
         [Benchmark]
-        public void IntInlineComparer() => Array.Sort(_sortTargets, _intInlineComparer);
+        public void IntInlineComparer() => _sortTargets.Sort(_intInlineComparer);
 
         [Benchmark]
-        public void InlineComparer() => Array.Sort(_sortTargets, _inlineComparer);        
+        public void InlineComparer() => _sortTargets.Sort(_inlineComparer);        
         
         [Benchmark]
-        public void HandCoded() => Array.Sort(_sortTargets, _handCoded);
+        public void HandCoded() => _sortTargets.Sort(_handCoded);
         
         [Benchmark]
-        public void IntInlineHandCoded() => Array.Sort(_sortTargets, _intInlineHandCoded);        
+        public void IntInlineHandCoded() => _sortTargets.Sort(_intInlineHandCoded);        
 
         [Benchmark]
-        public void Nito() => Array.Sort(_sortTargets, _nitoComparer);
+        public void Nito() => _sortTargets.Sort(_nitoComparer);
         
         [Benchmark]
         public void ExprTreeGeneratedOrderBy() => _sortTargets.OrderBy(m => m, _generatedComparer).Consume(_consumer);
