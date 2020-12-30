@@ -32,6 +32,10 @@ namespace SortFuncGeneration
         private static readonly HandcodedComparer _handcodedComparer = new();
         private static readonly ComparerAdaptor<Target> _ilEmittedComparer = new(ILEmitGenerator.EmitSortFunc<Target>(_sortDescriptors));
         private static readonly ComparerAdaptor<Target> _exprTreeComparer = new(ExprTreeSortFuncCompiler.MakeSortFunc<Target>(_sortDescriptors));
+
+        private static readonly unsafe ComparerAdaptor<Target> _handcodedFuncComparer = new(HandcodedFunc);
+        private static readonly unsafe ComparerAdaptorPtr _handcodedFuncPtrComparer = new(&HandcodedFunc);
+
         private static readonly ComparerAdaptor<Target> _composedFunctionsComparer = new(ComposedFuncs);
         private static readonly ComparerAdaptor<Target> _combinatorFunctionsComparer = new(CombineFuncs(_composedSubFuncs));
 
@@ -113,7 +117,23 @@ namespace SortFuncGeneration
 
             return 0;
         }
+        
+        static int HandcodedFunc(Target xx, Target yy)
+        {
+            if (xx.IntProp1 < yy.IntProp1) return -1;
+            if (xx.IntProp1 > yy.IntProp1) return 1;
 
+            int tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
+            if (tmp != 0)
+                return tmp;
+
+            if (xx.IntProp2 < yy.IntProp2) return -1;
+            return xx.IntProp2 > yy.IntProp2 
+                ? 1 
+                : CompareOrdinal(xx.StrProp2, yy.StrProp2);
+        }        
+        
+        
         public bool IsValid()
         {
             Setup();
@@ -152,6 +172,12 @@ namespace SortFuncGeneration
 
         [Benchmark]
         public void CombinatorFunctions() => _sortTargets.Sort(_combinatorFunctionsComparer);
+
+        [Benchmark]
+        public void HandcodedFunction() => _sortTargets.Sort(_handcodedFuncComparer);
+
+        [Benchmark]
+        public void HandcodedFunctionPtr() => _sortTargets.Sort(_handcodedFuncPtrComparer);
 
         [Benchmark]
         public void HandcodedComparer() => _sortTargets.Sort(_handcodedComparer);

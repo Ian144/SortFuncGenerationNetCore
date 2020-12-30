@@ -1,7 +1,5 @@
 ﻿
 
-# nullable enable
-
 namespace SortFuncGeneration
 {
     public record SortDescriptor(bool Ascending, string PropName);

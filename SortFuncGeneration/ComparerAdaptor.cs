@@ -5,14 +5,20 @@ using static System.String;
 
 namespace SortFuncGeneration
 {
-    // making ComparerAdaptor a readonly struct slowed down sorting, and increased allocs from 136 to 160 bytes
     public class ComparerAdaptor<T> : IComparer<T>
     {
         private readonly Func<T, T, int> _sortFunc;
         public ComparerAdaptor(Func<T, T, int> sortFunc) => _sortFunc = sortFunc;
         public int Compare(T x, T y) => _sortFunc(x, y);
     }
-   
+
+    public unsafe class ComparerAdaptorPtr : IComparer<Target>
+    {
+        private readonly delegate*<Target, Target, int> _sortFunc;
+        public ComparerAdaptorPtr(delegate*<Target, Target, int> sortFunc) => _sortFunc = sortFunc;
+        public int Compare(Target x, Target y) => _sortFunc(x, y);
+    }
+
     public class HandcodedComparer : IComparer<Target>
     {
         public int Compare(Target xx, Target yy)

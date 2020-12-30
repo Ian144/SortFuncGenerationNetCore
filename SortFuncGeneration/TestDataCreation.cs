@@ -5,7 +5,6 @@ using FsCheck;
 
 #nullable enable
 
-// ReSharper disable ArrangeTypeModifiers
 // ReSharper disable ClassNeverInstantiated.Global
 
 namespace SortFuncGeneration
