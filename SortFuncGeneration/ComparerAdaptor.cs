@@ -12,45 +12,8 @@ namespace SortFuncGeneration
         public ComparerAdaptor(Func<T, T, int> sortFunc) => _sortFunc = sortFunc;
         public int Compare(T x, T y) => _sortFunc(x, y);
     }
-    
-    
-    // making ComparerAdaptor a readonly struct slowed down sorting, and increased allocs from 136 to 160 bytes
-    public class InlineComparer : IComparer<Target>
-    {
-        public int Compare(Target xx, Target yy)
-        {
-            int tmp;
-            return (tmp = xx.IntProp1.CompareTo(yy.IntProp1)) != 0
-                ? tmp
-                : (tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1)) != 0
-                    ? tmp
-                    : (tmp = xx.IntProp2.CompareTo(yy.IntProp2)) != 0
-                        ? tmp
-                        : CompareOrdinal(xx.StrProp2, yy.StrProp2);
-        } 
-    }    
-    
-    //public class InlineComparer2 : IComparer<Target>
-    //{
-    //    public int Compare(Target xx, Target yy)
-    //    {
-    //        int tmp;
-    //        return xx.IntProp1 < yy.IntProp1
-    //                ? -1
-    //                : xx.IntProp1 > yy.IntProp1
-    //                    ? 1
-    //                    :(tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1)) != 0
-    //                    ? tmp
-    //                    : xx.IntProp2< yy.IntProp2
-    //                        ? -1
-    //                        : xx.IntProp2 > yy.IntProp2
-    //                            ? 1
-    //                            : CompareOrdinal(xx.StrProp2, yy.StrProp2);
-    //    } 
-    //}
-
-    
-    public class IntInlineComparer : IComparer<Target>
+   
+    public class HandcodedComparer : IComparer<Target>
     {
         public int Compare(Target xx, Target yy)
         {

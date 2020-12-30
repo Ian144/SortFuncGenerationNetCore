@@ -56,7 +56,7 @@ namespace SortFuncGeneration
                                  
                         namespace RosGen
                         {
-                             public class IntInlineComparer : System.Collections.Generic.IComparer<Target>
+                             public class HandcodedComparer : System.Collections.Generic.IComparer<Target>
                              {
                                  int System.Collections.Generic.IComparer<Target>.Compare(Target xx, Target yy)
                                  {
@@ -96,7 +96,7 @@ namespace SortFuncGeneration
 
             stream.Seek(0, SeekOrigin.Begin);
             var assembly = Assembly.Load(stream.ToArray());
-            Type type = assembly.GetType("RosGen.IntInlineComparer");
+            Type type = assembly.GetType("RosGen.HandcodedComparer");
             IComparer<Target> comp = (IComparer<Target>) Activator.CreateInstance(type) ;
             return comp;
         }
