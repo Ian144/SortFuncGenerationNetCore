@@ -33,7 +33,7 @@ namespace SortFuncGeneration
         private static readonly ComparerAdaptor<Target> _ilEmittedComparer = new(ILEmitGenerator.EmitSortFunc<Target>(_sortDescriptors));
         private static readonly ComparerAdaptor<Target> _exprTreeComparer = new(ExprTreeSortFuncCompiler.MakeSortFunc<Target>(_sortDescriptors));
 
-        private static readonly unsafe ComparerAdaptor<Target> _handcodedFuncComparer = new(HandcodedFunc);
+        private static readonly ComparerAdaptor<Target> _handcodedFuncComparer = new(HandcodedFunc);
         private static readonly unsafe ComparerAdaptorPtr _handcodedFuncPtrComparer = new(&HandcodedFunc);
 
         private static readonly ComparerAdaptor<Target> _composedFunctionsComparer = new(ComposedFuncs);
@@ -118,6 +118,24 @@ namespace SortFuncGeneration
             return 0;
         }
         
+        //static int HandcodedFunc2(Target xx, Target yy)
+        //{
+        //    int tmp;
+
+        //    if (xx.IntProp1 < yy.IntProp1) return -1;
+        //    if (xx.IntProp1 > yy.IntProp1) return 1;
+
+        //    int tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
+        //    if (tmp != 0)
+        //        return tmp;
+
+        //    if (xx.IntProp2 < yy.IntProp2) return -1;
+        //    return xx.IntProp2 > yy.IntProp2 
+        //        ? 1 
+        //        : CompareOrdinal(xx.StrProp2, yy.StrProp2);
+        //}
+
+
         static int HandcodedFunc(Target xx, Target yy)
         {
             if (xx.IntProp1 < yy.IntProp1) return -1;
