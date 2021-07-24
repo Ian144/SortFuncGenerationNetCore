@@ -5,7 +5,7 @@ using BenchmarkDotNet.Running;
 
 namespace SortFuncGeneration
 {
-    class Program
+    static class Program
     {
         static void Main()
         {

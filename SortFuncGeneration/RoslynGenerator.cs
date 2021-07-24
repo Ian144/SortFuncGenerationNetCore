@@ -25,35 +25,35 @@ namespace SortFuncGeneration
 
         private void ReferenceAssemblyContainingType<T>() => ReferenceAssembly(typeof (T).Assembly);
 
-        private  Assembly GenerateAssembly(string code)
-        {
-            var assemblyName = Path.GetRandomFileName();
-            var syntaxTree = CSharpSyntaxTree.ParseText(code);
+        //private  Assembly GenerateAssembly(string code)
+        //{
+        //    var assemblyName = Path.GetRandomFileName();
+        //    var syntaxTree = CSharpSyntaxTree.ParseText(code);
 
-            var compilation = CSharpCompilation.Create(
-                assemblyName, 
-                new[]{syntaxTree}, 
-                _references,
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        //    var compilation = CSharpCompilation.Create(
+        //        assemblyName, 
+        //        new[]{syntaxTree}, 
+        //        _references,
+        //        new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-            using var stream = new MemoryStream();
-            var result = compilation.Emit(stream);
+        //    using var stream = new MemoryStream();
+        //    var result = compilation.Emit(stream);
 
-            if (!result.Success)
-            {
-                IEnumerable<string> messages = result.Diagnostics.Select(x => $"{x.Id}: {x.GetMessage()}");
-                string msgStr = string.Join('\n', messages);
-                throw new InvalidOperationException(msgStr);
-            }
+        //    if (!result.Success)
+        //    {
+        //        IEnumerable<string> messages = result.Diagnostics.Select(x => $"{x.Id}: {x.GetMessage()}");
+        //        string msgStr = string.Join('\n', messages);
+        //        throw new InvalidOperationException(msgStr);
+        //    }
 
-            stream.Seek(0, SeekOrigin.Begin);
-            return Assembly.Load(stream.ToArray());
-        }
+        //    stream.Seek(0, SeekOrigin.Begin);
+        //    return Assembly.Load(stream.ToArray());
+        //}
 
         public IComparer<Target> GenComparer()
         {
             var code = @"using SortFuncGeneration;
-                                 
+
                         namespace RosGen
                         {
                              public class RoslynComparer : System.Collections.Generic.IComparer<Target>

@@ -29,17 +29,17 @@ namespace SortFuncGeneration
 
         private static readonly Consumer _linqConsumer = new();
 
-        private static readonly HandcodedComparer _handcodedComparer = new();
-        private static readonly ComparerAdaptor<Target> _ilEmittedComparer = new(ILEmitGenerator.EmitSortFunc<Target>(_sortDescriptors));
-        private static readonly ComparerAdaptor<Target> _exprTreeComparer = new(ExprTreeSortFuncCompiler.MakeSortFunc<Target>(_sortDescriptors));
+        private static readonly HandCodedComparer _handCodedComparer = new();
+        private static readonly ComparerAdapter<Target> _ilEmittedComparer = new(ILEmitGenerator.EmitSortFunc<Target>(_sortDescriptors));
+        private static readonly ComparerAdapter<Target> _exprTreeComparer = new(ExprTreeSortFuncCompiler.MakeSortFunc<Target>(_sortDescriptors));
 
-        private static readonly ComparerAdaptor<Target> _handcodedFuncComparer = new(HandcodedFunc);
-        private static readonly unsafe ComparerAdaptorPtr _handcodedFuncPtrComparer = new(&HandcodedFunc);
+        private static readonly ComparerAdapter<Target> _handCodedFuncComparer = new(HandCodedFunc);
+        private static readonly unsafe ComparerAdapterPtr _handCodedFuncPtrComparer = new(&HandCodedFunc);
 
-        private static readonly ComparerAdaptor<Target> _composedFunctionsComparer = new(ComposedFuncs);
-        private static readonly ComparerAdaptor<Target> _combinatorFunctionsComparer = new(CombineFuncs(_composedSubFuncs));
+        private static readonly ComparerAdapter<Target> _composedFunctionsComparer = new(ComposedFuncs);
+        private static readonly ComparerAdapter<Target> _combinatorFunctionsComparer = new(CombineFuncs(_composedSubFuncs));
 
-        // todo add timing code inside RoslynGenerator
+        // todo record/benchmark time roslyn takes to compile
         private static readonly RoslynGenerator _rosGen = new();
         private static readonly IComparer<Target> _roslynComparer = _rosGen.GenComparer();
 
@@ -99,8 +99,8 @@ namespace SortFuncGeneration
         {
             static Func<Target, Target, int> Combine(Func<Target, Target, int> fA, Func<Target, Target, int> fb) => (tA, tB) =>
                 {
-                    int tmp;
-                    return (tmp = fA(tA, tB)) != 0 ? tmp : fb(tA, tB);
+                    int tmp = fA(tA, tB);
+                    return tmp != 0 ? tmp : fb(tA, tB);
                 };
 
             return funcs.Aggregate(Combine);
@@ -118,7 +118,7 @@ namespace SortFuncGeneration
             return 0;
         }
         
-        //static int HandcodedFunc2(Target xx, Target yy)
+        //static int HandCodedFunc2(Target xx, Target yy)
         //{
         //    int tmp;
 
@@ -136,7 +136,7 @@ namespace SortFuncGeneration
         //}
 
 
-        static int HandcodedFunc(Target xx, Target yy)
+        static int HandCodedFunc(Target xx, Target yy)
         {
             if (xx.IntProp1 < yy.IntProp1) return -1;
             if (xx.IntProp1 > yy.IntProp1) return 1;
@@ -165,14 +165,14 @@ namespace SortFuncGeneration
 
             var composedFunctionsSorted = _source.OrderBy(m => m, _composedFunctionsComparer);
             var combinatorFunctionsSorted = _source.OrderBy(m => m, _combinatorFunctionsComparer);
-            var handcodedSorted = _source.OrderBy(m => m, _handcodedComparer);
+            var handCodedSorted = _source.OrderBy(m => m, _handCodedComparer);
             
             return
                 referenceOrdering.SequenceEqual(exprTreeSorted) &&
                 referenceOrdering.SequenceEqual(composedFunctionsSorted) &&
                 referenceOrdering.SequenceEqual(combinatorFunctionsSorted) &&
                 referenceOrdering.SequenceEqual(roslynSorted) &&
-                referenceOrdering.SequenceEqual(handcodedSorted) &&
+                referenceOrdering.SequenceEqual(handCodedSorted) &&
                 referenceOrdering.SequenceEqual(ilEmitSorted);
         }
 
@@ -192,13 +192,13 @@ namespace SortFuncGeneration
         public void CombinatorFunctions() => _sortTargets.Sort(_combinatorFunctionsComparer);
 
         [Benchmark]
-        public void HandcodedFunction() => _sortTargets.Sort(_handcodedFuncComparer);
+        public void HandCodedFunction() => _sortTargets.Sort(_handCodedFuncComparer);
 
         [Benchmark]
-        public void HandcodedFunctionPtr() => _sortTargets.Sort(_handcodedFuncPtrComparer);
+        public void HandCodedFunctionPtr() => _sortTargets.Sort(_handCodedFuncPtrComparer);
 
         [Benchmark]
-        public void HandcodedComparer() => _sortTargets.Sort(_handcodedComparer);
+        public void HandCodedComparer() => _sortTargets.Sort(_handCodedComparer);
 
         [Benchmark]
         public void Nito() => _sortTargets.Sort(_nitoComparer);
@@ -208,5 +208,8 @@ namespace SortFuncGeneration
 
         [Benchmark]
         public void LinqBaseLine() => _lazyLinqOrderByThenBy.Consume(_linqConsumer);
+
+        [Benchmark]
+        public IComparer<Target> RoslynCompilation() =>  _rosGen.GenComparer();
     }
 }
