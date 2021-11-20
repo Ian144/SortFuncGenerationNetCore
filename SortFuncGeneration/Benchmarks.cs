@@ -37,9 +37,8 @@ namespace SortFuncGeneration
         private static readonly unsafe ComparerAdapterPtr _handCodedFuncPtrComparer = new(&HandCodedFunc);
 
         private static readonly ComparerAdapter<Target> _composedFunctionsComparer = new(ComposedFuncs);
-        private static readonly ComparerAdapter<Target> _combinatorFunctionsComparer = new(CombineFuncs(_composedSubFuncs));
+        private static readonly ComparerAdapter<Target> CombinatorFunctionsComparer = new(CombineFuncs(_composedSubFuncs));
 
-        // todo record/benchmark time roslyn takes to compile
         private static readonly RoslynGenerator _rosGen = new();
         private static readonly IComparer<Target> _roslynComparer = _rosGen.GenComparer();
 
@@ -136,21 +135,37 @@ namespace SortFuncGeneration
         //}
 
 
+        //static int HandCodedFunc(Target xx, Target yy)
+        //{
+        //    if (xx.IntProp1 < yy.IntProp1) return -1;
+        //    if (xx.IntProp1 > yy.IntProp1) return 1;
+
+        //    int tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
+        //    if (tmp != 0)
+        //        return tmp;
+
+        //    if (xx.IntProp2 < yy.IntProp2) return -1;
+        //    return xx.IntProp2 > yy.IntProp2 
+        //        ? 1 
+        //        : CompareOrdinal(xx.StrProp2, yy.StrProp2);
+        //}        
+        
         static int HandCodedFunc(Target xx, Target yy)
         {
-            if (xx.IntProp1 < yy.IntProp1) return -1;
-            if (xx.IntProp1 > yy.IntProp1) return 1;
-
-            int tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
+            int tmp = xx.IntProp1.CompareTo(yy.IntProp1);
             if (tmp != 0)
                 return tmp;
 
-            if (xx.IntProp2 < yy.IntProp2) return -1;
-            return xx.IntProp2 > yy.IntProp2 
-                ? 1 
-                : CompareOrdinal(xx.StrProp2, yy.StrProp2);
-        }        
-        
+            tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
+            if (tmp != 0)
+                return tmp;
+
+            tmp = xx.IntProp2.CompareTo(yy.IntProp2);
+            if (tmp != 0)
+                return tmp;
+
+            return CompareOrdinal(xx.StrProp2, yy.StrProp2);
+        }
         
         public bool IsValid()
         {
@@ -164,7 +179,7 @@ namespace SortFuncGeneration
             var ilEmitSorted = _source.OrderBy(m => m, _ilEmittedComparer);
 
             var composedFunctionsSorted = _source.OrderBy(m => m, _composedFunctionsComparer);
-            var combinatorFunctionsSorted = _source.OrderBy(m => m, _combinatorFunctionsComparer);
+            var combinatorFunctionsSorted = _source.OrderBy(m => m, CombinatorFunctionsComparer);
             var handCodedSorted = _source.OrderBy(m => m, _handCodedComparer);
             
             return
@@ -189,7 +204,7 @@ namespace SortFuncGeneration
         public void ComposedFunctions() => _sortTargets.Sort(_composedFunctionsComparer);
 
         [Benchmark]
-        public void CombinatorFunctions() => _sortTargets.Sort(_combinatorFunctionsComparer);
+        public void CombinatorFunctions() => _sortTargets.Sort(CombinatorFunctionsComparer);
 
         [Benchmark]
         public void HandCodedFunction() => _sortTargets.Sort(_handCodedFuncComparer);

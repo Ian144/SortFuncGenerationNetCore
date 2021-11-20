@@ -25,31 +25,6 @@ namespace SortFuncGeneration
 
         private void ReferenceAssemblyContainingType<T>() => ReferenceAssembly(typeof (T).Assembly);
 
-        //private  Assembly GenerateAssembly(string code)
-        //{
-        //    var assemblyName = Path.GetRandomFileName();
-        //    var syntaxTree = CSharpSyntaxTree.ParseText(code);
-
-        //    var compilation = CSharpCompilation.Create(
-        //        assemblyName, 
-        //        new[]{syntaxTree}, 
-        //        _references,
-        //        new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        //    using var stream = new MemoryStream();
-        //    var result = compilation.Emit(stream);
-
-        //    if (!result.Success)
-        //    {
-        //        IEnumerable<string> messages = result.Diagnostics.Select(x => $"{x.Id}: {x.GetMessage()}");
-        //        string msgStr = string.Join('\n', messages);
-        //        throw new InvalidOperationException(msgStr);
-        //    }
-
-        //    stream.Seek(0, SeekOrigin.Begin);
-        //    return Assembly.Load(stream.ToArray());
-        //}
-
         public IComparer<Target> GenComparer()
         {
             var code = @"using SortFuncGeneration;
@@ -58,21 +33,39 @@ namespace SortFuncGeneration
                         {
                              public class RoslynComparer : System.Collections.Generic.IComparer<Target>
                              {
-                                 int System.Collections.Generic.IComparer<Target>.Compare(Target xx, Target yy)
-                                 {
-                                     if (xx.IntProp1 < yy.IntProp1) return -1;
-                                     if (xx.IntProp1 > yy.IntProp1) return 1;
+                                int System.Collections.Generic.IComparer<Target>.Compare(Target xx, Target yy)
+                                {
+                                    int tmp = xx.IntProp1.CompareTo(yy.IntProp1);
+                                    if (tmp != 0)
+                                        return tmp;
+
+                                    tmp = string.CompareOrdinal(xx.StrProp1, yy.StrProp1);
+                                    if (tmp != 0)
+                                        return tmp;
+
+                                    tmp = xx.IntProp2.CompareTo(yy.IntProp2);
+                                    if (tmp != 0)
+                                        return tmp;
+
+                                    return string.CompareOrdinal(xx.StrProp2, yy.StrProp2);
+                                }
+
+                                 //int System.Collections.Generic.IComparer<Target>.Compare(Target xx, Target yy)
+                                 //{
+                                 //    if (xx.IntProp1 < yy.IntProp1) return -1;
+                                 //    if (xx.IntProp1 > yy.IntProp1) return 1;
                          
-                                     int tmp = string.CompareOrdinal(xx.StrProp1, yy.StrProp1);
-                                     if (tmp != 0)
-                                         return tmp;
+                                 //    int tmp = string.CompareOrdinal(xx.StrProp1, yy.StrProp1);
+                                 //    if (tmp != 0)
+                                 //        return tmp;
                          
-                                     if (xx.IntProp2 < yy.IntProp2) return -1;
-                                     return xx.IntProp2 > yy.IntProp2 
-                                         ? 1 
-                                         : string.CompareOrdinal(xx.StrProp2, yy.StrProp2);
-                                 } 
+                                 //    if (xx.IntProp2 < yy.IntProp2) return -1;
+                                 //    return xx.IntProp2 > yy.IntProp2 
+                                 //        ? 1 
+                                 //        : string.CompareOrdinal(xx.StrProp2, yy.StrProp2);
+                                 //} 
                              }
+
                         }";
 
             var assemblyName = Path.GetRandomFileName();
@@ -90,15 +83,13 @@ namespace SortFuncGeneration
             if (!result.Success)
             {
                 IEnumerable<string> messages = result.Diagnostics.Select(x => $"{x.Id}: {x.GetMessage()}");
-                string msgStr = string.Join('\n', messages);
-                throw new InvalidOperationException(msgStr);
+                throw new InvalidOperationException(string.Join('\n', messages));
             }
 
             stream.Seek(0, SeekOrigin.Begin);
             var assembly = Assembly.Load(stream.ToArray());
-            Type type = assembly.GetType("RosGen.RoslynComparer");
-            IComparer<Target> comp = (IComparer<Target>) Activator.CreateInstance(type) ;
-            return comp;
+            var type = assembly.GetType("RosGen.RoslynComparer");
+            return (IComparer<Target>) Activator.CreateInstance(type);
         }
     }
 }
