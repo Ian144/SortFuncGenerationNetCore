@@ -34,6 +34,8 @@ namespace SortFuncGeneration
 
     class MyArbitraries
     {
+        protected MyArbitraries() {}
+
         public static Arbitrary<Target> Target() => new ArbitraryTarget();
         public static Arbitrary<string> String() => new ArbitrarySimpleString();
         public static Arbitrary<char> Char() => new ArbitrarySimpleChar();

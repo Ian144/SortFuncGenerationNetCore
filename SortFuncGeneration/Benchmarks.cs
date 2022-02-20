@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
+using BenchmarkDotNet.Order;
 using Nito.Comparers;
 using static System.String;
 
@@ -12,6 +13,7 @@ using static System.String;
 namespace SortFuncGeneration
 {
     [MemoryDiagnoser]
+    [Orderer(SummaryOrderPolicy.FastestToSlowest)]
     public class Benchmarks
     {
         private static readonly List<SortDescriptor> _sortDescriptors = new()
@@ -116,57 +118,44 @@ namespace SortFuncGeneration
 
             return 0;
         }
-        
-        //static int HandCodedFunc2(Target xx, Target yy)
-        //{
-        //    int tmp;
 
-        //    if (xx.IntProp1 < yy.IntProp1) return -1;
-        //    if (xx.IntProp1 > yy.IntProp1) return 1;
+        static int HandCodedFunc(Target xx, Target yy)
+        {
+            var xxIntProp1 = xx.IntProp1;
+            var yyIntProp1 = yy.IntProp1;
+            if (xxIntProp1 < yyIntProp1) return -1;
+            if (xxIntProp1 > yyIntProp1) return 1;
 
-        //    int tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
-        //    if (tmp != 0)
-        //        return tmp;
+            int tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
+            if (tmp != 0)
+                return tmp;
 
-        //    if (xx.IntProp2 < yy.IntProp2) return -1;
-        //    return xx.IntProp2 > yy.IntProp2 
-        //        ? 1 
-        //        : CompareOrdinal(xx.StrProp2, yy.StrProp2);
-        //}
+            var xxIntProp2 = xx.IntProp2;
+            var yyIntProp2 = yy.IntProp2;
+            if (xxIntProp2 < yyIntProp2) return -1;
+            return xxIntProp2 > yyIntProp2
+                ? 1
+                : CompareOrdinal(xx.StrProp2, yy.StrProp2);
+        }
 
 
         //static int HandCodedFunc(Target xx, Target yy)
         //{
-        //    if (xx.IntProp1 < yy.IntProp1) return -1;
-        //    if (xx.IntProp1 > yy.IntProp1) return 1;
-
-        //    int tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
+        //    int tmp = xx.IntProp1.CompareTo(yy.IntProp1);
         //    if (tmp != 0)
         //        return tmp;
 
-        //    if (xx.IntProp2 < yy.IntProp2) return -1;
-        //    return xx.IntProp2 > yy.IntProp2 
-        //        ? 1 
-        //        : CompareOrdinal(xx.StrProp2, yy.StrProp2);
-        //}        
-        
-        static int HandCodedFunc(Target xx, Target yy)
-        {
-            int tmp = xx.IntProp1.CompareTo(yy.IntProp1);
-            if (tmp != 0)
-                return tmp;
+        //    tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
+        //    if (tmp != 0)
+        //        return tmp;
 
-            tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
-            if (tmp != 0)
-                return tmp;
+        //    tmp = xx.IntProp2.CompareTo(yy.IntProp2);
+        //    if (tmp != 0)
+        //        return tmp;
 
-            tmp = xx.IntProp2.CompareTo(yy.IntProp2);
-            if (tmp != 0)
-                return tmp;
+        //    return CompareOrdinal(xx.StrProp2, yy.StrProp2);
+        //}
 
-            return CompareOrdinal(xx.StrProp2, yy.StrProp2);
-        }
-        
         public bool IsValid()
         {
             Setup();
@@ -184,7 +173,7 @@ namespace SortFuncGeneration
             
             return
                 referenceOrdering.SequenceEqual(exprTreeSorted) &&
-                referenceOrdering.SequenceEqual(composedFunctionsSorted) &&
+                referenceOrdering.SequenceEqual(composedFunctionsSorted) && 
                 referenceOrdering.SequenceEqual(combinatorFunctionsSorted) &&
                 referenceOrdering.SequenceEqual(roslynSorted) &&
                 referenceOrdering.SequenceEqual(handCodedSorted) &&
@@ -224,7 +213,8 @@ namespace SortFuncGeneration
         [Benchmark]
         public void LinqBaseLine() => _lazyLinqOrderByThenBy.Consume(_linqConsumer);
 
-        [Benchmark]
-        public IComparer<Target> RoslynCompilation() =>  _rosGen.GenComparer();
+        // commenting this out, as it will appear first in the ordered summary
+        //[Benchmark]
+        //public IComparer<Target> RoslynCompilation() =>  _rosGen.GenComparer();
     }
 }
