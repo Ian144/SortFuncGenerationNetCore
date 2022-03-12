@@ -39,7 +39,7 @@ namespace SortFuncGeneration
         private static readonly unsafe ComparerAdapterPtr _handCodedFuncPtrComparer = new(&HandCodedFunc);
 
         private static readonly ComparerAdapter<Target> _composedFunctionsComparer = new(ComposedFuncs);
-        private static readonly ComparerAdapter<Target> CombinatorFunctionsComparer = new(CombineFuncs(_composedSubFuncs));
+        private static readonly ComparerAdapter<Target> _combinatorFunctionsComparer = new(CombineFuncs(_composedSubFuncs));
 
         private static readonly RoslynGenerator _rosGen = new();
         private static readonly IComparer<Target> _roslynComparer = _rosGen.GenComparer();
@@ -51,10 +51,10 @@ namespace SortFuncGeneration
                 .ThenBy(p => p.IntProp2)
                 .ThenBy(p => p.StrProp2, StringComparer.Ordinal);
 
-        private IOrderedEnumerable<Target> _lazyLinqOrderByThenBy;
+        private static IOrderedEnumerable<Target> _lazyLinqOrderByThenBy;
 
         [GlobalSetup]
-        public void Setup()
+        public static void GlobalSetup()
         {
             var dir = Path.Combine(Path.GetTempPath(), "targetData.data");
             var fs = new FileStream(dir, FileMode.Open, FileAccess.Read);
@@ -75,7 +75,7 @@ namespace SortFuncGeneration
         }
 
         [IterationSetup]
-        public void ISetup()
+        public void IterSetup()
         {
             // unsort _sortTargets as _sortTargets.Sort is place, previous iterations will have sorted _sortTargets, resulting in sorting already sorted data
             for (int ctr = 0; ctr < _source.Count; ++ctr)
@@ -158,8 +158,8 @@ namespace SortFuncGeneration
 
         public bool IsValid()
         {
-            Setup();
-            ISetup();
+            GlobalSetup();
+            IterSetup();
 
             var referenceOrdering = _lazyLinqOrderByThenBy.ToList();
 
@@ -168,7 +168,7 @@ namespace SortFuncGeneration
             var ilEmitSorted = _source.OrderBy(m => m, _ilEmittedComparer);
 
             var composedFunctionsSorted = _source.OrderBy(m => m, _composedFunctionsComparer);
-            var combinatorFunctionsSorted = _source.OrderBy(m => m, CombinatorFunctionsComparer);
+            var combinatorFunctionsSorted = _source.OrderBy(m => m, _combinatorFunctionsComparer);
             var handCodedSorted = _source.OrderBy(m => m, _handCodedComparer);
             
             return
@@ -193,7 +193,7 @@ namespace SortFuncGeneration
         public void ComposedFunctions() => _sortTargets.Sort(_composedFunctionsComparer);
 
         [Benchmark]
-        public void CombinatorFunctions() => _sortTargets.Sort(CombinatorFunctionsComparer);
+        public void CombinatorFunctions() => _sortTargets.Sort(_combinatorFunctionsComparer);
 
         [Benchmark]
         public void HandCodedFunction() => _sortTargets.Sort(_handCodedFuncComparer);

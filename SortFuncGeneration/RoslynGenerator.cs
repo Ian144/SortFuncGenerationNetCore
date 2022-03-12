@@ -27,7 +27,7 @@ namespace SortFuncGeneration
 
         public IComparer<Target> GenComparer()
         {
-            var code = @"using SortFuncGeneration;
+            const string code = @"using SortFuncGeneration;
 
                         namespace RosGen
                         {
