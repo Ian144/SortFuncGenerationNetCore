@@ -78,7 +78,7 @@ public class Benchmarks
     [IterationSetup]
     public void IterSetup()
     {
-        // unsort _sortTargets as _sortTargets.Sort is place, previous iterations will have sorted _sortTargets, resulting in sorting already sorted data
+        // un-sort _sortTargets as _sortTargets.Sort is place, previous iterations will have sorted _sortTargets, resulting in sorting already sorted data
         for (int ctr = 0; ctr < _source.Count; ++ctr)
         {
             _sortTargets[ctr] = _source[ctr];
