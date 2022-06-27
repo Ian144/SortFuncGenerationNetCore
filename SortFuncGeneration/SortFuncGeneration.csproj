@@ -26,10 +26,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0-1.final" />
     <PackageReference Include="Nito.Comparers" Version="6.2.2" />
     <PackageReference Include="protobuf-net" Version="3.0.101" />
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="8.32.0.39516">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
 </Project>
