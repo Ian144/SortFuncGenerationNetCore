@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using Nito.Comparers;
 using static System.String;
@@ -15,8 +16,10 @@ namespace SortFuncGeneration;
 
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class Benchmarks
-{
+[SimpleJob(RuntimeMoniker.NetCoreApp31, baseline:true)]
+[SimpleJob(RuntimeMoniker.Net60)]
+[SimpleJob(RuntimeMoniker.Net70)]
+public class Benchmarks {
     private static readonly List<SortDescriptor> _sortDescriptors = new()
     {
         new SortDescriptor(true, "IntProp1"),
