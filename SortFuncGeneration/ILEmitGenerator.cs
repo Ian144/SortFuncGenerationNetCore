@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using static System.String;
-
-
 
 namespace SortFuncGeneration;
 
@@ -14,7 +11,6 @@ namespace SortFuncGeneration;
 public static class ILEmitGenerator
 {
     private static readonly MethodInfo _strCompareOrdinal = typeof(string).GetMethod("CompareOrdinal", new[] { typeof(string), typeof(string) });
-    private static readonly MethodInfo _intCompareTo = typeof(int).GetMethod("CompareTo", new[] { typeof(int) });
         
     public static Func<T, T, int> EmitSortFunc<T>(List<SortDescriptor> sortBys)
     {
@@ -32,176 +28,103 @@ public static class ILEmitGenerator
 
         var generator = dynamicMethod.GetILGenerator();
         
-        // needed to add the 'tmp' variable, and loc.0, 
         generator.DeclareLocal(typeof(int));
-        
-        void Emitx(OpCode opCode)
-        {
-            generator.Emit(opCode);
-            Debug.WriteLine(opCode);
-        }
-
-        void Emitb(OpCode opCode, Label lbl, string lblName)
-        {
-            generator.Emit(opCode, lbl);
-            Debug.WriteLine($"{opCode}\t{lblName}");
-        }        
-        
-        void Emitm(OpCode opCode, MethodInfo mi)
-        {
-            generator.Emit(opCode, mi);
-            Debug.WriteLine($"{opCode}\t{mi}");
-        }
-
-        void MarkLabel(Label lbl, string lblName)
-        {
-            generator.MarkLabel(lbl);
-            Debug.WriteLine($"LABEL: {lblName}");
-        }
 
         for(int ctr = 0; ctr < xs.Count; ++ctr)
         {
+            bool isLastComparison = ctr == xs.Count - 1;
             (MethodInfo propGet, bool ascending) = xs[ctr];
 
             if (propGet.ReturnType == typeof(int))
             {
+                if (isLastComparison)
+                {
+                    throw new NotImplementedException();
+                }
+
+                var labelx = generator.DefineLabel();
+                var labely = generator.DefineLabel();
+
                 if (ascending)
                 {
-                    Debug.WriteLine("\n\nint ascending");
-                    Debug.WriteLine("-------------");
-                    var labelx = generator.DefineLabel();
-                    var labely = generator.DefineLabel();
+                    generator.Emit(OpCodes.Ldarg_0);
+                    generator.Emit(OpCodes.Callvirt, propGet);
+                    generator.Emit(OpCodes.Ldarg_1);
+                    generator.Emit(OpCodes.Callvirt, propGet);
+                    generator.Emit(OpCodes.Bge_S, labelx);
+                    generator.Emit(OpCodes.Ldc_I4_M1); // return -1
+                    generator.Emit(OpCodes.Ret);
+                    generator.MarkLabel(labelx);
 
-                    Emitx(OpCodes.Ldarg_0);
-                    Emitm(OpCodes.Callvirt, propGet);
-                    Emitx(OpCodes.Ldarg_1);
-                    Emitm(OpCodes.Callvirt, propGet);
-                    Emitb(OpCodes.Bge_S, labelx, nameof(labelx));
-                    Emitx(OpCodes.Ldc_I4_M1); // return -1
-                    Emitx(OpCodes.Ret);
-                    MarkLabel(labelx, nameof(labelx));
-
-                    Emitx(OpCodes.Ldarg_0);
-                    Emitm(OpCodes.Callvirt, propGet);
-                    Emitx(OpCodes.Ldarg_1);
-                    Emitm(OpCodes.Callvirt, propGet);
-                    Emitb(OpCodes.Ble_S, labely, nameof(labely));
-                    Emitx(OpCodes.Ldc_I4_1); // return 1
-                    Emitx(OpCodes.Ret);
-                    MarkLabel(labely, nameof(labely));
-                    
-                    Debug.WriteLine("-------------");
+                    generator.Emit(OpCodes.Ldarg_0);
+                    generator.Emit(OpCodes.Callvirt, propGet);
+                    generator.Emit(OpCodes.Ldarg_1);
+                    generator.Emit(OpCodes.Callvirt, propGet);
+                    generator.Emit(OpCodes.Ble_S, labely);
+                    generator.Emit(OpCodes.Ldc_I4_1); // return 1
+                    generator.Emit(OpCodes.Ret);
+                    generator.MarkLabel(labely);
                 }
                 else
                 {
-                    Debug.WriteLine("\n\nint descending");
-                    Debug.WriteLine("-------------");
-                    var labelp = generator.DefineLabel();
-                    var labelq = generator.DefineLabel();
+                    generator.Emit(OpCodes.Ldarg_0);
+                    generator.Emit(OpCodes.Callvirt, propGet);
+                    generator.Emit(OpCodes.Ldarg_1);
+                    generator.Emit(OpCodes.Callvirt, propGet);
+                    generator.Emit(OpCodes.Ble_S, labelx); // Bge_S if ascending
+                    generator.Emit(OpCodes.Ldc_I4_1); // return 1, would return -1 if ascending
+                    generator.Emit(OpCodes.Ret); 
+                    generator.MarkLabel(labelx);
 
-                    Emitx(OpCodes.Ldarg_0);
-                    Emitm(OpCodes.Callvirt, propGet);
-                    Emitx(OpCodes.Ldarg_1);
-                    Emitm(OpCodes.Callvirt, propGet);
-                    Emitb(OpCodes.Ble_S, labelp, nameof(labelp));
-                    Emitx(OpCodes.Ldc_I4_1); // return 1
-                    Emitx(OpCodes.Ret); 
-                    MarkLabel(labelp, nameof(labelp));
-
-                    Emitx(OpCodes.Ldarg_0);
-                    Emitm(OpCodes.Callvirt, propGet);
-                    Emitx(OpCodes.Ldarg_1);
-                    Emitm(OpCodes.Callvirt, propGet);
-                    Emitb(OpCodes.Bge_S, labelq, nameof(labelq));
-                    Emitx(OpCodes.Ldc_I4_M1); // return -1
-                    Emitx(OpCodes.Ret);
-                    MarkLabel(labelq, nameof(labelq));
-                    Debug.WriteLine("-------------");
+                    generator.Emit(OpCodes.Ldarg_0);
+                    generator.Emit(OpCodes.Callvirt, propGet);
+                    generator.Emit(OpCodes.Ldarg_1);
+                    generator.Emit(OpCodes.Callvirt, propGet);
+                    generator.Emit(OpCodes.Bge_S, labely);
+                    generator.Emit(OpCodes.Ldc_I4_M1); // return -1
+                    generator.Emit(OpCodes.Ret);
+                    generator.MarkLabel(labely);
                 }
             }
             else if (propGet.ReturnType == typeof(string))
             {
-
-                if (ctr == xs.Count - 1)
+                if (ascending)
                 {
-                    if (ascending)
-                    {
-                        Debug.WriteLine("\n\nstring ascending last");
-                        Debug.WriteLine("----------------");
-                        Emitx(OpCodes.Ldarg_0);
-                        Emitm(OpCodes.Callvirt, propGet);
-                        Emitx(OpCodes.Ldarg_1);
-                        Emitm(OpCodes.Callvirt, propGet);
-                        Emitm(OpCodes.Call, _strCompareOrdinal);
-                        Emitx(OpCodes.Ret);
+                    generator.Emit(OpCodes.Ldarg_0);
+                    generator.Emit(OpCodes.Callvirt, propGet);
+                    generator.Emit(OpCodes.Ldarg_1);
+                    generator.Emit(OpCodes.Callvirt, propGet);
+                }
+                else
+                {
+                    // flips the order of Ldarg_1 and Ldarg_0 compared to ascending
+                    generator.Emit(OpCodes.Ldarg_1);
+                    generator.Emit(OpCodes.Callvirt, propGet);
+                    generator.Emit(OpCodes.Ldarg_0);
+                    generator.Emit(OpCodes.Callvirt, propGet);
+                }
 
-                    }
-                    else
-                    {
-                        Debug.WriteLine("\n\nstring descending last");
-                        Debug.WriteLine("----------------");
-                        Emitx(OpCodes.Ldarg_1); // swaps the order of Ldarg_1 and Ldarg_0 compared to ascending
-                        Emitm(OpCodes.Callvirt, propGet);
-                        Emitx(OpCodes.Ldarg_0);
-                        Emitm(OpCodes.Callvirt, propGet);
-                        Emitm(OpCodes.Call, _strCompareOrdinal);
-                        Emitx(OpCodes.Ret);
-                        Debug.WriteLine("----------------");
-                    }
+                generator.Emit(OpCodes.Call, _strCompareOrdinal);
+
+                if (isLastComparison)
+                {
+                    generator.Emit(OpCodes.Ret);
                 }
                 else
                 {
                     var labelf = generator.DefineLabel();
-
-                    if (ascending)
-                    {
-                        Debug.WriteLine("\n\nstring ascending");
-                        Debug.WriteLine("----------------");
-                        Emitx(OpCodes.Ldarg_0);
-                        Emitm(OpCodes.Callvirt, propGet);
-                        Emitx(OpCodes.Ldarg_1);
-                        Emitm(OpCodes.Callvirt, propGet);
-                        Emitm(OpCodes.Call, _strCompareOrdinal);
-                        Emitx(OpCodes.Stloc_0); // tmp
-                        Emitx(OpCodes.Ldloc_0); // tmp
-                        Emitb(OpCodes.Brfalse_S, labelf, nameof(labelf));
-                        Emitx(OpCodes.Ldloc_0); // tmp
-                        Emitx(OpCodes.Ret);
-                        MarkLabel(labelf, nameof(labelf));
-                        Debug.WriteLine("----------------");
-
-                    }
-                    else
-                    {
-                        Debug.WriteLine("\n\nstring descending");
-                        Debug.WriteLine("----------------");
-                        Emitx(OpCodes.Ldarg_1); // swaps the order of Ldarg_1 and Ldarg_0 compared to ascending
-                        Emitm(OpCodes.Callvirt, propGet);
-                        Emitx(OpCodes.Ldarg_0);
-                        Emitm(OpCodes.Callvirt, propGet);
-                        Emitm(OpCodes.Call, _strCompareOrdinal);
-                        Emitx(OpCodes.Stloc_0);
-                        Emitx(OpCodes.Ldloc_0);
-                        Emitb(OpCodes.Brfalse_S, labelf, nameof(labelf));
-                        Emitx(OpCodes.Ldloc_0);
-                        Emitx(OpCodes.Ret);
-                        MarkLabel(labelf, nameof(labelf));
-                        Debug.WriteLine("----------------");
-                    }
+                    generator.Emit(OpCodes.Stloc_0);
+                    generator.Emit(OpCodes.Ldloc_0);
+                    generator.Emit(OpCodes.Brfalse_S, labelf);
+                    generator.Emit(OpCodes.Ldloc_0);
+                    generator.Emit(OpCodes.Ret);
+                    generator.MarkLabel(labelf);
                 }
             }
             else
             {
                 throw new ApplicationException($"unsupported property type: {propGet.ReturnType}");
             }
-
-            // tmp variable only used in non 'last' string comparison, WHAT WOULD A List<SortDescriptor> COMPILER LOOK LIKE
-            
-            // the end pattern, is this correct for last cases 
-            // branchx to label
-            // ensure the return value is at the top of the stack, Ldc_I4_M1, Ldc_I4_1 or the return value of String.CompareOrdinal (String, String) will have put it there
-            // 
-        
         }
 
         return (Func<T, T, int>)dynamicMethod.CreateDelegate(typeof(Func<T, T, int>));
