@@ -17,8 +17,8 @@ namespace SortFuncGeneration;
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [SimpleJob(RuntimeMoniker.NetCoreApp31, baseline:true)]
-[SimpleJob(RuntimeMoniker.Net60)]
-[SimpleJob(RuntimeMoniker.Net70)]
+//[SimpleJob(RuntimeMoniker.Net60)]
+//[SimpleJob(RuntimeMoniker.Net70)]
 public class Benchmarks {
     private static readonly List<SortDescriptor> _sortDescriptors = new()
     {
@@ -40,6 +40,7 @@ public class Benchmarks {
     private static readonly ComparerAdapter<Target> _exprTreeComparer = new(ExprTreeSortFuncCompiler.MakeSortFunc<Target>(_sortDescriptors));
 
     private static readonly ComparerAdapter<Target> _handCodedFuncComparer = new(HandCodedFunc);
+    private static readonly ComparerAdapter<Target> _handCodedFuncLocalIntVarsComparer = new(HandCodedFuncLocalIntVars);
     private static readonly unsafe ComparerAdapterPtr _handCodedFuncPtrComparer = new(&HandCodedFunc);
 
     private static readonly ComparerAdapter<Target> _composedFunctionsComparer = new(ComposedFuncs);
@@ -142,6 +143,25 @@ public class Benchmarks {
             : CompareOrdinal(xx.StrProp2, yy.StrProp2);
     }
 
+    static int HandCodedFuncLocalIntVars(Target xx, Target yy)
+    {
+        var xxIntProp1 = xx.IntProp1;
+        var yyIntProp1 = yy.IntProp1;
+        if (xxIntProp1 < yyIntProp1) return -1;
+        if (xxIntProp1 > yyIntProp1) return 1;
+
+        int tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
+        if (tmp != 0)
+            return tmp;
+
+        var xxIntProp2 = xx.IntProp2;
+        var yyIntProp2 = yy.IntProp2;
+        if (xxIntProp2 < yyIntProp2) return -1;
+        if (xxIntProp2 > yyIntProp2) return -1;
+        return CompareOrdinal(xx.StrProp2, yy.StrProp2);
+    }
+
+
 #pragma warning disable S125
     //static int HandCodedFunc(Target xx, Target yy)
     //{
@@ -195,29 +215,33 @@ public class Benchmarks {
     [Benchmark]
     public void ILEmitted() => _sortTargets.Sort(_ilEmittedComparer);
 
-    [Benchmark]
-    public void ComposedFunctions() => _sortTargets.Sort(_composedFunctionsComparer);
+    //[Benchmark]
+    //public void ComposedFunctions() => _sortTargets.Sort(_composedFunctionsComparer);
 
-    [Benchmark]
-    public void CombinatorFunctions() => _sortTargets.Sort(_combinatorFunctionsComparer);
+    //[Benchmark]
+    //public void CombinatorFunctions() => _sortTargets.Sort(_combinatorFunctionsComparer);
 
     [Benchmark]
     public void HandCodedFunction() => _sortTargets.Sort(_handCodedFuncComparer);
 
     [Benchmark]
-    public void HandCodedFunctionPtr() => _sortTargets.Sort(_handCodedFuncPtrComparer);
+    public void HandCodedFunctionLocalIntVars() => _sortTargets.Sort(_handCodedFuncLocalIntVarsComparer);
 
-    [Benchmark]
-    public void HandCodedComparer() => _sortTargets.Sort(_handCodedComparer);
 
-    [Benchmark]
-    public void Nito() => _sortTargets.Sort(_nitoComparer);
+    //[Benchmark]
+    //public void HandCodedFunctionPtr() => _sortTargets.Sort(_handCodedFuncPtrComparer);
 
-    [Benchmark]
-    public void ExprTreeGeneratedOrderBy() => _sortTargets.OrderBy(m => m, _exprTreeComparer).Consume(_linqConsumer);
+    //[Benchmark]
+    //public void HandCodedComparer() => _sortTargets.Sort(_handCodedComparer);
 
-    [Benchmark]
-    public void LinqBaseLine() => _lazyLinqOrderByThenBy.Consume(_linqConsumer);
+    //[Benchmark]
+    //public void Nito() => _sortTargets.Sort(_nitoComparer);
+
+    //[Benchmark]
+    //public void ExprTreeGeneratedOrderBy() => _sortTargets.OrderBy(m => m, _exprTreeComparer).Consume(_linqConsumer);
+
+    //[Benchmark]
+    //public void LinqBaseLine() => _lazyLinqOrderByThenBy.Consume(_linqConsumer);
 
     // commenting this out, as it will appear first in the ordered summary
     //[Benchmark]
