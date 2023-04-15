@@ -3,7 +3,7 @@ using BenchmarkDotNet.Running;
 using SortFuncGeneration;
 
 
-TestDataCreation.CreateAndPersistData(100000);
+TestDataCreation.CreateAndPersistData(200000);
 
 var bmark = new Benchmarks();
 if (bmark.IsValid())

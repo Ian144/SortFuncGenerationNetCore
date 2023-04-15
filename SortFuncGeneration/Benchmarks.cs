@@ -16,9 +16,9 @@ namespace SortFuncGeneration;
 
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-[SimpleJob(RuntimeMoniker.NetCoreApp31, baseline:true)]
+//[SimpleJob(RuntimeMoniker.NetCoreApp31, baseline:true)]
 //[SimpleJob(RuntimeMoniker.Net60)]
-//[SimpleJob(RuntimeMoniker.Net70)]
+[SimpleJob(RuntimeMoniker.Net70)]
 public class Benchmarks {
     private static readonly List<SortDescriptor> _sortDescriptors = new()
     {
@@ -234,14 +234,14 @@ public class Benchmarks {
     //[Benchmark]
     //public void HandCodedComparer() => _sortTargets.Sort(_handCodedComparer);
 
-    //[Benchmark]
-    //public void Nito() => _sortTargets.Sort(_nitoComparer);
+    [Benchmark]
+    public void Nito() => _sortTargets.Sort(_nitoComparer);
 
     //[Benchmark]
     //public void ExprTreeGeneratedOrderBy() => _sortTargets.OrderBy(m => m, _exprTreeComparer).Consume(_linqConsumer);
 
-    //[Benchmark]
-    //public void LinqBaseLine() => _lazyLinqOrderByThenBy.Consume(_linqConsumer);
+    [Benchmark]
+    public void LinqBaseLine() => _lazyLinqOrderByThenBy.Consume(_linqConsumer);
 
     // commenting this out, as it will appear first in the ordered summary
     //[Benchmark]
