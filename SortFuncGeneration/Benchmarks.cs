@@ -215,11 +215,11 @@ public class Benchmarks {
     [Benchmark]
     public void ILEmitted() => _sortTargets.Sort(_ilEmittedComparer);
 
-    //[Benchmark]
-    //public void ComposedFunctions() => _sortTargets.Sort(_composedFunctionsComparer);
+    [Benchmark]
+    public void ComposedFunctions() => _sortTargets.Sort(_composedFunctionsComparer);
 
-    //[Benchmark]
-    //public void CombinatorFunctions() => _sortTargets.Sort(_combinatorFunctionsComparer);
+    [Benchmark]
+    public void CombinatorFunctions() => _sortTargets.Sort(_combinatorFunctionsComparer);
 
     [Benchmark]
     public void HandCodedFunction() => _sortTargets.Sort(_handCodedFuncComparer);
