@@ -1,6 +1,4 @@
-﻿
-
-using ProtoBuf;
+﻿using ProtoBuf;
 
 namespace SortFuncGeneration;
 

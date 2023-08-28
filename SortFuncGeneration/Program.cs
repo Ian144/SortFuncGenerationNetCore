@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using BenchmarkDotNet.Running;
 using SortFuncGeneration;
 
