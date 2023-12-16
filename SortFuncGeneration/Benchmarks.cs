@@ -16,17 +16,17 @@ namespace SortFuncGeneration;
 
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-//[SimpleJob(RuntimeMoniker.NetCoreApp31, baseline:true)]
-//[SimpleJob(RuntimeMoniker.Net60)]
+[SimpleJob(RuntimeMoniker.Net60, baseline:true)]
 [SimpleJob(RuntimeMoniker.Net70)]
+[SimpleJob(RuntimeMoniker.Net80)]
 public class Benchmarks {
-    private static readonly List<SortDescriptor> _sortDescriptors = new()
-    {
+    private static readonly List<SortDescriptor> _sortDescriptors =
+    [
         new SortDescriptor(true, "IntProp1"),
         new SortDescriptor(true, "StrProp1"),
         new SortDescriptor(true, "IntProp2"),
-        new SortDescriptor(true, "StrProp2"),
-    };
+        new SortDescriptor(true, "StrProp2")
+    ];
 
     private static readonly Func<Target, Target, int>[] _composedSubFuncs = { CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2 };
 
@@ -224,8 +224,8 @@ public class Benchmarks {
     [Benchmark]
     public void HandCodedFunction() => _sortTargets.Sort(_handCodedFuncComparer);
 
-    [Benchmark]
-    public void HandCodedFunctionLocalIntVars() => _sortTargets.Sort(_handCodedFuncLocalIntVarsComparer);
+    //[Benchmark]
+    //public void HandCodedFunctionLocalIntVars() => _sortTargets.Sort(_handCodedFuncLocalIntVarsComparer);
 
 
     //[Benchmark]
