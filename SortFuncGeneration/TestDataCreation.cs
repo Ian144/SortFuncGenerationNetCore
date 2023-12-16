@@ -19,7 +19,9 @@ class ArbitrarySimpleString : Arbitrary<string>
 
 class ArbitrarySimpleChar : Arbitrary<char>
 {
-    public override Gen<char> Generator => Gen.Choose(97, 122).Select(Convert.ToChar);
+    public override Gen<char> Generator => 
+        from ii in Gen.Choose(97, 122)
+        select Convert.ToChar(ii);
 }
 
 class ArbitraryTarget : Arbitrary<Target>

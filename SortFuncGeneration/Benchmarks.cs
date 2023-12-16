@@ -40,8 +40,8 @@ public class Benchmarks {
     private static readonly ComparerAdapter<Target> _exprTreeComparer = new(ExprTreeSortFuncCompiler.MakeSortFunc<Target>(_sortDescriptors));
 
     private static readonly ComparerAdapter<Target> _handCodedFuncComparer = new(HandCodedFunc);
-    private static readonly ComparerAdapter<Target> _handCodedFuncLocalIntVarsComparer = new(HandCodedFuncLocalIntVars);
-    private static readonly unsafe ComparerAdapterPtr _handCodedFuncPtrComparer = new(&HandCodedFunc);
+    //private static readonly ComparerAdapter<Target> _handCodedFuncLocalIntVarsComparer = new(HandCodedFuncLocalIntVars);
+    //private static readonly unsafe ComparerAdapterPtr _handCodedFuncPtrComparer = new(&HandCodedFunc);
 
     private static readonly ComparerAdapter<Target> _composedFunctionsComparer = new(ComposedFuncs);
     private static readonly ComparerAdapter<Target> _combinatorFunctionsComparer = new(CombineFuncs(_composedSubFuncs));
@@ -103,11 +103,14 @@ public class Benchmarks {
 
     private static Func<Target, Target, int> CombineFuncs(IEnumerable<Func<Target, Target, int>> funcs)
     {
-        static Func<Target, Target, int> Combine(Func<Target, Target, int> fA, Func<Target, Target, int> fb) => (tA, tB) =>
+        static Func<Target, Target, int> Combine( Func<Target, Target, int> fA, Func<Target, Target, int> fb)
         {
-            int tmp = fA(tA, tB);
-            return tmp != 0 ? tmp : fb(tA, tB);
-        };
+            return (tA, tB) =>
+            {
+                int tmp = fA(tA, tB);
+                return tmp != 0 ? tmp : fb(tA, tB);
+            };
+        }
 
         return funcs.Aggregate(Combine);
     }
@@ -143,26 +146,26 @@ public class Benchmarks {
             : CompareOrdinal(xx.StrProp2, yy.StrProp2);
     }
 
-    static int HandCodedFuncLocalIntVars(Target xx, Target yy)
-    {
-        var xxIntProp1 = xx.IntProp1;
-        var yyIntProp1 = yy.IntProp1;
-        if (xxIntProp1 < yyIntProp1) return -1;
-        if (xxIntProp1 > yyIntProp1) return 1;
+    //static int HandCodedFuncLocalIntVars(Target xx, Target yy)
+    //{
+    //    var xxIntProp1 = xx.IntProp1;
+    //    var yyIntProp1 = yy.IntProp1;
+    //    if (xxIntProp1 < yyIntProp1) return -1;
+    //    if (xxIntProp1 > yyIntProp1) return 1;
 
-        int tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
-        if (tmp != 0)
-            return tmp;
+    //    int tmp = CompareOrdinal(xx.StrProp1, yy.StrProp1);
+    //    if (tmp != 0)
+    //        return tmp;
 
-        var xxIntProp2 = xx.IntProp2;
-        var yyIntProp2 = yy.IntProp2;
-        if (xxIntProp2 < yyIntProp2) return -1;
-        if (xxIntProp2 > yyIntProp2) return -1;
-        return CompareOrdinal(xx.StrProp2, yy.StrProp2);
-    }
+    //    var xxIntProp2 = xx.IntProp2;
+    //    var yyIntProp2 = yy.IntProp2;
+    //    if (xxIntProp2 < yyIntProp2) return -1;
+    //    if (xxIntProp2 > yyIntProp2) return -1;
+    //    return CompareOrdinal(xx.StrProp2, yy.StrProp2);
+    //}
 
 
-#pragma warning disable S125
+// #pragma warning disable S125
     //static int HandCodedFunc(Target xx, Target yy)
     //{
 
@@ -180,7 +183,7 @@ public class Benchmarks {
 
     //    return CompareOrdinal(xx.StrProp2, yy.StrProp2);
     //}
-#pragma warning restore S125
+// #pragma warning restore S125
         
     public bool IsValid()
     {
