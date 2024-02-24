@@ -4,21 +4,32 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Diagnosers;
+using BenchmarkDotNet.Diagnostics.Windows.Configs;
 using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using Nito.Comparers;
 using static System.String;
+
 // ReSharper disable InconsistentNaming
 
 
 namespace SortFuncGeneration;
 
-[MemoryDiagnoser]
-[Orderer(SummaryOrderPolicy.FastestToSlowest)]
-[SimpleJob(RuntimeMoniker.Net60, baseline:true)]
-[SimpleJob(RuntimeMoniker.Net70)]
-[SimpleJob(RuntimeMoniker.Net80)]
+
+
+//[DryJob]
+//[KeepBenchmarkFiles]
+//[HtmlExporter]
+//[NativeMemoryProfiler]
+[DisassemblyDiagnoser(printSource:true)]
+// [Orderer(SummaryOrderPolicy.FastestToSlowest)]
+// [MemoryDiagnoser]
+[HardwareCounters(HardwareCounter.CacheMisses, HardwareCounter.BranchMispredictsRetired)]
+//[SimpleJob(RuntimeMoniker.Net60)]
+//[SimpleJob(RuntimeMoniker.Net70)]
+// [SimpleJob(RuntimeMoniker.Net80)]
 public class Benchmarks {
     private static readonly List<SortDescriptor> _sortDescriptors =
     [
@@ -49,12 +60,12 @@ public class Benchmarks {
     private static readonly RoslynGenerator _rosGen = new();
     private static readonly IComparer<Target> _roslynComparer = _rosGen.GenComparer();
 
-    private static readonly IComparer<Target> _nitoComparer =
-        ComparerBuilder.For<Target>()
-            .OrderBy(p => p.IntProp1)
-            .ThenBy(p => p.StrProp1, StringComparer.Ordinal)
-            .ThenBy(p => p.IntProp2)
-            .ThenBy(p => p.StrProp2, StringComparer.Ordinal);
+    // private static readonly IComparer<Target> _nitoComparer =
+    //     ComparerBuilder.For<Target>()
+    //         .OrderBy(p => p.IntProp1)
+    //         .ThenBy(p => p.StrProp1, StringComparer.Ordinal)
+    //         .ThenBy(p => p.IntProp2)
+    //         .ThenBy(p => p.StrProp2, StringComparer.Ordinal);
 
     private static IOrderedEnumerable<Target> _lazyLinqOrderByThenBy;
 
@@ -215,14 +226,14 @@ public class Benchmarks {
     [Benchmark]
     public void ExprTreeGenerated() => _sortTargets.Sort(_exprTreeComparer);
 
-    [Benchmark]
-    public void ILEmitted() => _sortTargets.Sort(_ilEmittedComparer);
+    //[Benchmark]
+    //public void ILEmitted() => _sortTargets.Sort(_ilEmittedComparer);
 
-    [Benchmark]
-    public void ComposedFunctions() => _sortTargets.Sort(_composedFunctionsComparer);
+    //[Benchmark]
+    //public void ComposedFunctions() => _sortTargets.Sort(_composedFunctionsComparer);
 
-    [Benchmark]
-    public void CombinatorFunctions() => _sortTargets.Sort(_combinatorFunctionsComparer);
+    //[Benchmark]
+    //public void CombinatorFunctions() => _sortTargets.Sort(_combinatorFunctionsComparer);
 
     [Benchmark]
     public void HandCodedFunction() => _sortTargets.Sort(_handCodedFuncComparer);
@@ -237,8 +248,8 @@ public class Benchmarks {
     //[Benchmark]
     //public void HandCodedComparer() => _sortTargets.Sort(_handCodedComparer);
 
-    [Benchmark]
-    public void Nito() => _sortTargets.Sort(_nitoComparer);
+    //[Benchmark]
+    //public void Nito() => _sortTargets.Sort(_nitoComparer);
 
     //[Benchmark]
     //public void ExprTreeGeneratedOrderBy() => _sortTargets.OrderBy(m => m, _exprTreeComparer).Consume(_linqConsumer);
