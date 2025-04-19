@@ -13,7 +13,7 @@ class ArbitrarySimpleString : Arbitrary<string>
 {
     public override Gen<string> Generator => Gen
         .ArrayOf(Arb.Generate<char>())
-        .Where(xs => xs.Any())
+        .Where(xs => xs.Length != 0)
         .Select(arr => new string(arr));
 }
 

@@ -10,7 +10,7 @@ namespace SortFuncGeneration;
 
 public class RoslynGenerator
 {
-    private readonly IList<MetadataReference> _references = new List<MetadataReference>();
+    private readonly List<MetadataReference> _references = [];
 
     public RoslynGenerator()
     {

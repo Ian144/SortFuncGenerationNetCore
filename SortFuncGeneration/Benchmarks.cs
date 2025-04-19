@@ -24,12 +24,12 @@ namespace SortFuncGeneration;
 //[HtmlExporter]
 //[NativeMemoryProfiler]
 [DisassemblyDiagnoser(printSource:true)]
-// [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-// [MemoryDiagnoser]
-[HardwareCounters(HardwareCounter.CacheMisses, HardwareCounter.BranchMispredictsRetired)]
+[MemoryDiagnoser]
+[Orderer(SummaryOrderPolicy.FastestToSlowest)]
+//[HardwareCounters(HardwareCounter.CacheMisses, HardwareCounter.BranchMispredictsRetired)]
 //[SimpleJob(RuntimeMoniker.Net60)]
 //[SimpleJob(RuntimeMoniker.Net70)]
-// [SimpleJob(RuntimeMoniker.Net80)]
+//[SimpleJob(RuntimeMoniker.Net80)]
 public class Benchmarks {
     private static readonly List<SortDescriptor> _sortDescriptors =
     [
@@ -73,7 +73,7 @@ public class Benchmarks {
     public static void GlobalSetup()
     {
         var dir = Path.Combine(Path.GetTempPath(), "targetData.data");
-        var fs = new FileStream(dir, FileMode.Open, FileAccess.Read);
+        using var fs = new FileStream(dir, FileMode.Open, FileAccess.Read);
         _source = ProtoBuf.Serializer.Deserialize<List<Target>>(fs);
         _sortTargets = new List<Target>(_source.Count);
 
