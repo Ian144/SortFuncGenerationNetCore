@@ -4,12 +4,6 @@
     <OutputType>Exe</OutputType>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-<!--    <WarningsAsErrors>CA2000</WarningsAsErrors>-->
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>CA1515;CA1303;CA1002;CA2201;CA1822;CA1812;CA1305;CA1062;CA1852</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -20,13 +14,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+<!--  using centralised package management (experiment)-->
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.5" />
-    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.5" />
-    <PackageReference Include="FsCheck" Version="3.0.0-alpha5" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0-2.final" />
-    <PackageReference Include="Nito.Comparers" Version="6.2.2" />
-    <PackageReference Include="protobuf-net" Version="3.1.26" />
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" />
+    <PackageReference Include="FsCheck" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Nito.Comparers" />
+    <PackageReference Include="protobuf-net" />
   </ItemGroup>
 
 </Project>

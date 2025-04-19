@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <!-- analyzer warnings -->
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>    
+    <NoWarn>CA1515;CA1303;CA1002;CA2201;CA1822;CA1812;CA1305;CA1062;CA1852</NoWarn>
+
+    <!-- deterministic, faster builds -->
+    <Deterministic>true</Deterministic> <!-- Enables reproducible + cacheable builds -->
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly> <!-- speeds up builds, in vs at least -->
+
+    <LangVersion>latest</LangVersion>
+    <RestoreLockedMode>true</RestoreLockedMode>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+
+  </PropertyGroup>
+</Project>
+
