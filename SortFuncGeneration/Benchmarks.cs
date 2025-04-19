@@ -27,9 +27,8 @@ namespace SortFuncGeneration;
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 //[HardwareCounters(HardwareCounter.CacheMisses, HardwareCounter.BranchMispredictsRetired)]
-//[SimpleJob(RuntimeMoniker.Net60)]
-//[SimpleJob(RuntimeMoniker.Net70)]
 //[SimpleJob(RuntimeMoniker.Net80)]
+[LongRunJob]
 public class Benchmarks {
     private static readonly List<SortDescriptor> _sortDescriptors =
     [
@@ -39,7 +38,7 @@ public class Benchmarks {
         new SortDescriptor(true, "StrProp2")
     ];
 
-    private static readonly Func<Target, Target, int>[] _composedSubFuncs = { CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2 };
+    private static readonly Func<Target, Target, int>[] _composedSubFuncs = [CmpIntProp1, CmpStrProp1, CmpIntProp2, CmpStrProp2];
 
     private static List<Target> _source;
     private static List<Target> _sortTargets;
@@ -52,7 +51,7 @@ public class Benchmarks {
 
     private static readonly ComparerAdapter<Target> _handCodedFuncComparer = new(HandCodedFunc);
     //private static readonly ComparerAdapter<Target> _handCodedFuncLocalIntVarsComparer = new(HandCodedFuncLocalIntVars);
-    //private static readonly unsafe ComparerAdapterPtr _handCodedFuncPtrComparer = new(&HandCodedFunc);
+    private static readonly unsafe ComparerAdapterPtr _handCodedFuncPtrComparer = new(&HandCodedFunc);
 
     private static readonly ComparerAdapter<Target> _composedFunctionsComparer = new(ComposedFuncs);
     private static readonly ComparerAdapter<Target> _combinatorFunctionsComparer = new(CombineFuncs(_composedSubFuncs));
@@ -60,12 +59,12 @@ public class Benchmarks {
     private static readonly RoslynGenerator _rosGen = new();
     private static readonly IComparer<Target> _roslynComparer = _rosGen.GenComparer();
 
-    // private static readonly IComparer<Target> _nitoComparer =
-    //     ComparerBuilder.For<Target>()
-    //         .OrderBy(p => p.IntProp1)
-    //         .ThenBy(p => p.StrProp1, StringComparer.Ordinal)
-    //         .ThenBy(p => p.IntProp2)
-    //         .ThenBy(p => p.StrProp2, StringComparer.Ordinal);
+    private static readonly IComparer<Target> _nitoComparer =
+        ComparerBuilder.For<Target>()
+            .OrderBy(p => p.IntProp1)
+            .ThenBy(p => p.StrProp1, StringComparer.Ordinal)
+            .ThenBy(p => p.IntProp2)
+            .ThenBy(p => p.StrProp2, StringComparer.Ordinal);
 
     private static IOrderedEnumerable<Target> _lazyLinqOrderByThenBy;
 
@@ -242,14 +241,14 @@ public class Benchmarks {
     //public void HandCodedFunctionLocalIntVars() => _sortTargets.Sort(_handCodedFuncLocalIntVarsComparer);
 
 
-    //[Benchmark]
-    //public void HandCodedFunctionPtr() => _sortTargets.Sort(_handCodedFuncPtrComparer);
+    [Benchmark]
+    public void HandCodedFunctionPtr() => _sortTargets.Sort(_handCodedFuncPtrComparer);
 
     //[Benchmark]
     //public void HandCodedComparer() => _sortTargets.Sort(_handCodedComparer);
 
-    //[Benchmark]
-    //public void Nito() => _sortTargets.Sort(_nitoComparer);
+    [Benchmark]
+    public void Nito() => _sortTargets.Sort(_nitoComparer);
 
     //[Benchmark]
     //public void ExprTreeGeneratedOrderBy() => _sortTargets.OrderBy(m => m, _exprTreeComparer).Consume(_linqConsumer);
@@ -258,6 +257,6 @@ public class Benchmarks {
     public void LinqBaseLine() => _lazyLinqOrderByThenBy.Consume(_linqConsumer);
 
     // commenting this out, as it will appear first in the ordered summary
-    //[Benchmark]
-    //public IComparer<Target> RoslynCompilation() =>  _rosGen.GenComparer();
+    [Benchmark]
+    public IComparer<Target> RoslynCompilation() =>  _rosGen.GenComparer();
 }
