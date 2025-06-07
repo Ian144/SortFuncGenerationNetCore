@@ -46,15 +46,15 @@ public static class ExprTreeSortFuncCompiler
             _                                   => throw new ApplicationException($"unsupported property type: {prop1.Type}")
         };
             
-        IEnumerable<ParameterExpression> variables = new[] { result };
+        IEnumerable<ParameterExpression> variables = [result];
 
-        IEnumerable<Expression> expressions = new Expression[]
-        {
+        IEnumerable<Expression> expressions =
+        [
             Expression.Assign(result, compareExpr),
             Expression.IfThen(
                 Expression.NotEqual(Expression.Constant(0), result),
                 Expression.Goto(labelReturn, result))
-        };
+        ];
 
         return Expression.Block(variables, expressions);
     }
@@ -65,6 +65,6 @@ public static class ExprTreeSortFuncCompiler
         LabelTarget labelReturn = Expression.Label(typeof(int));
         LabelExpression labelExpression = Expression.Label(labelReturn, result);
         IEnumerable<Expression> compareBlocks = sortDescriptors.Select(sd => MakePropertyCompareBlock(sd, param1Expr, param2Expr, labelReturn, result));
-        return Expression.Block(new[] { result }, compareBlocks.Append(labelExpression));
+        return Expression.Block([result], compareBlocks.Append(labelExpression));
     }
 }

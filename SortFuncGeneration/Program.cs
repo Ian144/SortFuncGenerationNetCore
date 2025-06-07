@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Text;
 using BenchmarkDotNet.Running;
 using SortFuncGeneration;
 
 
 TestDataCreation.CreateAndPersistData(200000);
 
-var bmark = new Benchmarks();
-if (bmark.IsValid())
+var benchmarks = new Benchmarks();
+if (benchmarks.IsValid())
 {
     Console.WriteLine("valid benchmark");
     var _ = BenchmarkRunner.Run<Benchmarks>();

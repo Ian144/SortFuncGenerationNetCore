@@ -112,7 +112,7 @@ public class RoslynGenerator
 
         var compilation = CSharpCompilation.Create(
             assemblyName,
-            new[] { syntaxTree },
+            [syntaxTree],
             _references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
                 optimizationLevel: OptimizationLevel.Release));

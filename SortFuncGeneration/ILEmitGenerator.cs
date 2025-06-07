@@ -10,16 +10,20 @@ public static class ILEmitGenerator
 {
     public static Func<T, T, int> EmitSortFunc<T>(List<SortDescriptor> sortBys)
     {
+        ArgumentNullException.ThrowIfNull(sortBys);
+
         var dynamicMethod = new DynamicMethod(
             name: "",
             returnType: typeof(int),
-            parameterTypes: new[] { typeof(T), typeof(T) },
+            parameterTypes: [typeof(T), typeof(T)],
             owner: typeof(T),
             skipVisibility: true);
 
         var generator = dynamicMethod.GetILGenerator();
 
-        var strCompareOrdinal = typeof(string).GetMethod("CompareOrdinal", new[] { typeof(string), typeof(string) });
+        var strCompareOrdinal = typeof(string).GetMethod("CompareOrdinal", [typeof(string), typeof(string)])
+            ?? throw new InvalidOperationException("Could not find String.CompareOrdinal method");
+
 
         for (int i = 0; i < sortBys.Count; ++i)
         {
@@ -28,7 +32,7 @@ public static class ILEmitGenerator
             MethodInfo propGet = typeof(T).GetProperty(sd.PropName)?.GetGetMethod();
 
             if (propGet == null)
-                throw new ApplicationException($"Unknown property '{sd.PropName}' on type '{typeof(T)}'");
+                throw new InvalidPropertyException($"Unknown property '{sd.PropName}' on type '{typeof(T)}'");
 
             Type propType = propGet.ReturnType;
 
@@ -59,7 +63,7 @@ public static class ILEmitGenerator
             }
             else
             {
-                throw new ApplicationException($"Unsupported property type: {propType}");
+                throw new InvalidPropertyException($"Unsupported property type: {propType}");
             }
 
             if (!isLastComparison)
