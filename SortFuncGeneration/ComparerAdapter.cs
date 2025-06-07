@@ -5,21 +5,17 @@ using static System.String;
 
 namespace SortFuncGeneration;
 
-public class ComparerAdapter<T> : IComparer<T>
+public class ComparerAdapter<T>(Func<T, T, int> sortFunc) : IComparer<T>
 {
-    private readonly Func<T, T, int> _sortFunc;
-    public ComparerAdapter(Func<T, T, int> sortFunc) => _sortFunc = sortFunc;
-    public int Compare(T x, T y) => _sortFunc(x, y);
+    public int Compare(T x, T y) => sortFunc(x, y);
 }
 
-public unsafe class ComparerAdapterPtr : IComparer<Target>
+internal sealed unsafe class ComparerAdapterPtr(delegate*<Target, Target, int> sortFunc) : IComparer<Target>
 {
-    private readonly delegate*<Target, Target, int> _sortFunc;
-    public ComparerAdapterPtr(delegate*<Target, Target, int> sortFunc) => _sortFunc = sortFunc;
-    public int Compare(Target x, Target y) => _sortFunc(x, y);
+    public int Compare(Target x, Target y) => sortFunc(x, y);
 }
 
-public class HandCodedComparer : IComparer<Target>
+internal sealed class HandCodedComparer : IComparer<Target>
 {
     public int Compare(Target xx, Target yy)
     {

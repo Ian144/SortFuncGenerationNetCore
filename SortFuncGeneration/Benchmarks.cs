@@ -15,6 +15,8 @@ using static System.String;
 // ReSharper disable InconsistentNaming
 
 
+#pragma warning disable CA1822 // disable 'member can be static' as making it so breaks benchmarkdotnet
+
 namespace SortFuncGeneration;
 
 

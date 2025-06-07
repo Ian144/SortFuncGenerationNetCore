@@ -3,13 +3,19 @@
 
 namespace SortFuncGeneration;
 
-public class InvalidPropertyException(string message) : Exception(message)
+#pragma warning disable CA1032
+public class InvalidPropertyException : Exception
+#pragma warning restore CA1032
 {
+    public InvalidPropertyException(string message) : base(message)
+    {
+    }
+
     public InvalidPropertyException(string message, Exception innerException) : base(message, innerException)
     {
     }
 
-    public InvalidPropertyException() : this()
-    {
-    }
+    // public InvalidPropertyException() : base("An invalid property was specified")
+    // {
+    // }
 }

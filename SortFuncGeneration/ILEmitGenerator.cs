@@ -5,6 +5,8 @@ using System.Reflection.Emit;
 
 namespace SortFuncGeneration;
 
+#pragma warning disable CA1002
+
 // ReSharper disable once InconsistentNaming
 public static class ILEmitGenerator
 {

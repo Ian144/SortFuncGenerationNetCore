@@ -122,13 +122,15 @@ public class RoslynGenerator
 
         if (!result.Success)
         {
+#pragma warning disable CA1305
             IEnumerable<string> messages = result.Diagnostics.Select(x => $"{x.Id}: {x.GetMessage()}");
+#pragma warning restore CA1305
             throw new InvalidOperationException(string.Join('\n', messages));
         }
 
         stream.Seek(0, SeekOrigin.Begin);
         var assembly = Assembly.Load(stream.ToArray());
         var type = assembly.GetType("RosGen.RoslynComparer");
-        return (IComparer<Target>)Activator.CreateInstance(type);
+        return (IComparer<Target>)Activator.CreateInstance(type!);
     }
 }

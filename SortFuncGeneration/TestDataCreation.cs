@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using FsCheck;
+// ReSharper disable ConvertToStaticClass
 
 #nullable enable
 
@@ -9,7 +10,7 @@ using FsCheck;
 
 namespace SortFuncGeneration;
 
-class ArbitrarySimpleString : Arbitrary<string>
+sealed class ArbitrarySimpleString : Arbitrary<string>
 {
     public override Gen<string> Generator => Gen
         .ArrayOf(Arb.Generate<char>())
@@ -17,14 +18,14 @@ class ArbitrarySimpleString : Arbitrary<string>
         .Select(arr => new string(arr));
 }
 
-class ArbitrarySimpleChar : Arbitrary<char>
+sealed class ArbitrarySimpleChar : Arbitrary<char>
 {
     public override Gen<char> Generator => 
         from ii in Gen.Choose(97, 122)
         select Convert.ToChar(ii);
 }
 
-class ArbitraryTarget : Arbitrary<Target>
+sealed class ArbitraryTarget : Arbitrary<Target>
 {
     public override Gen<Target> Generator =>
         from i1 in Arb.Generate<int>()
@@ -34,9 +35,9 @@ class ArbitraryTarget : Arbitrary<Target>
         select new Target(i1, i2, s1, s2);
 }
 
-class MyArbitraries
+sealed class MyArbitraries
 {
-    protected MyArbitraries() {}
+    private MyArbitraries() {}
     public static Arbitrary<Target> Target() => new ArbitraryTarget();
     public static Arbitrary<string> String() => new ArbitrarySimpleString();
     public static Arbitrary<char> Char() => new ArbitrarySimpleChar();

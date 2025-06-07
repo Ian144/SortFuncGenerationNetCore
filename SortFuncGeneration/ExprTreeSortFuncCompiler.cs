@@ -6,6 +6,9 @@ using System.Reflection;
 
 namespace SortFuncGeneration;
 
+/// <summary>
+/// Provides methods to generate sorting functions dynamically using expression trees.
+/// </summary>
 public static class ExprTreeSortFuncCompiler
 {
     private static readonly MethodInfo _intCompareTo = GetMethodInfo<int>(x => x.CompareTo(0));
@@ -13,7 +16,7 @@ public static class ExprTreeSortFuncCompiler
         
     public static MethodInfo GetMethodInfo<T>(Expression<Func<T,int>> expression)
     {
-        if (expression.Body is MethodCallExpression member)
+        if (expression is { Body: MethodCallExpression member })
             return member.Method;
 
         throw new ArgumentException("Expression is not a method", nameof(expression));
@@ -43,7 +46,8 @@ public static class ExprTreeSortFuncCompiler
         {
             _ when prop1.Type == typeof(string) => Expression.Call(_strCompareTo, prop1, prop2),
             _ when prop1.Type == typeof(int)    => Expression.Call(prop1, _intCompareTo, prop2),
-            _                                   => throw new ApplicationException($"unsupported property type: {prop1.Type}")
+            _ => throw new NotSupportedException($"Unsupported property type for comparison: {prop1.Type}")
+            
         };
             
         IEnumerable<ParameterExpression> variables = [result];
